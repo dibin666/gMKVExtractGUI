@@ -456,6 +456,8 @@ QMap<QString, QString> JsonLocalizationService::defaultEnglishDefaults()
         { QStringLiteral("UI.MainForm2.Errors.MkvCommandsNotFound"), QStringLiteral("Could not find mkvmerge, mkvinfo, and mkvextract. Install them on PATH or choose the mkvmerge executable.") },
         { QStringLiteral("UI.MainForm2.Errors.MkvToolNixDirectoryNotFound"), QStringLiteral("Select a valid MKVToolNix directory first.") },
         { QStringLiteral("UI.MainForm2.OutputDirectory.UseDefaultWithValue"), QStringLiteral("Use Currently Set Default Directory: ({0})") },
+        { QStringLiteral("UI.MainForm2.Progress.Current"), QStringLiteral("Current Progress:") },
+        { QStringLiteral("UI.MainForm2.Progress.Total"), QStringLiteral("Total Progress:") },
         { QStringLiteral("UI.MainForm2.Status.MkvCommandsDetected"), QStringLiteral("MKV command tools detected") },
         { QStringLiteral("UI.MainForm2.Status.MkvToolNixDetected"), QStringLiteral("MKVToolNix detected") },
         { QStringLiteral("UI.OptionsForm.Patterns.Group"), QStringLiteral("Filename Patterns") },

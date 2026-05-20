@@ -375,13 +375,19 @@ void MainWindow::buildUi()
     mainLayout->addWidget(actionsGroup);
 
     auto* footerLayout = new QHBoxLayout();
+    auto* currentProgressLabel = new QLabel(QStringLiteral("Current Progress:"), centralWidget);
+    setTextKey(currentProgressLabel, QStringLiteral("UI.MainForm2.Progress.Current"));
     m_currentProgress = new QProgressBar(centralWidget);
     m_currentProgress->setRange(0, 100);
+    auto* totalProgressLabel = new QLabel(QStringLiteral("Total Progress:"), centralWidget);
+    setTextKey(totalProgressLabel, QStringLiteral("UI.MainForm2.Progress.Total"));
     m_totalProgress = new QProgressBar(centralWidget);
     m_totalProgress->setRange(0, 100);
     m_darkModeCheckBox = new QCheckBox(QStringLiteral("Dark Mode"), centralWidget);
     setTextKey(m_darkModeCheckBox, QStringLiteral("UI.MainForm2.Appearance.Dark"));
+    footerLayout->addWidget(currentProgressLabel);
     footerLayout->addWidget(m_currentProgress, 1);
+    footerLayout->addWidget(totalProgressLabel);
     footerLayout->addWidget(m_totalProgress, 1);
     footerLayout->addWidget(m_darkModeCheckBox);
     auto* optionsButton = new QPushButton(QStringLiteral("Options"), centralWidget);

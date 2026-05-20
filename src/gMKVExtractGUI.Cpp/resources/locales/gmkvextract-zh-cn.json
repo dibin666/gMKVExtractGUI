@@ -384,6 +384,18 @@
       "IsTranslated": true,
       "Notes": "Total status bar label in main form 2"
     },
+    "UI.MainForm2.Progress.Current": {
+      "Source": "Current Progress:",
+      "Translation": "当前进度：",
+      "IsTranslated": true,
+      "Notes": "Label for the current extraction progress bar in main form 2"
+    },
+    "UI.MainForm2.Progress.Total": {
+      "Source": "Total Progress:",
+      "Translation": "总进度：",
+      "IsTranslated": true,
+      "Notes": "Label for the total extraction progress bar in main form 2"
+    },
     "UI.MainForm2.Actions.Group": {
       "Source": "Actions",
       "Translation": "操作",
