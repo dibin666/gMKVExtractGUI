@@ -12,12 +12,25 @@ namespace gmkv {
 Settings::Settings(const QString& appPath, const QString& userAppDataPath)
     : m_settingsPath(resolveSettingsPath(appPath, userAppDataPath))
 {
+    culture = defaultCulture();
     Logger::log(QStringLiteral("Detected settings path: %1").arg(m_settingsPath));
 }
 
 QString Settings::settingsFileName()
 {
     return QStringLiteral("gMKVExtractGUI.ini");
+}
+
+QString Settings::defaultCulture()
+{
+    return defaultCultureForLocale(QLocale::system());
+}
+
+QString Settings::defaultCultureForLocale(const QLocale& locale)
+{
+    return locale.language() == QLocale::Chinese
+        ? QStringLiteral("zh-cn")
+        : QStringLiteral("en");
 }
 
 QString Settings::settingsPath() const

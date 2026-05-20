@@ -1,79 +1,181 @@
-# gMKVExtractGUI
+# gMKVExtractGUI C++/Qt
 
-**A comprehensive C# .NET GUI for `mkvextract` and `mkvinfo` utilities.**
+Native C++/Qt desktop application for inspecting Matroska/WebM files and
+extracting tracks, timecodes, cues, chapters, tags, attachments, and CUE sheets
+through MKVToolNix command-line tools.
 
----
+## English
 
-## Short Summary
+### Project Status
 
-`gMKVExtractGUI` is a powerful and intuitive **Graphical User Interface (GUI)** built in C# .NET 4.0 for the essential **`mkvextract`** utility, which is part of the MKVToolNix suite. It aims to provide a user-friendly wrapper that incorporates most (if not all) of the functionality of both `mkvextract` and `mkvinfo`.
+- Active development fork: `https://github.com/dibin666/gMKVExtractGUI.git`
+- Active branch: `cpp-migration`
+- Upstream project: `https://github.com/Gpower2/gMKVExtractGUI`
+- Legacy C# source recovery point: branch `legacy-csharp-archive` and tag
+  `legacy-csharp-before-cpp-cleanup`
 
----
+This repository now treats the native C++/Qt application as the active product.
+The original repository remains configured as `upstream` for future syncs.
 
-## Full Description
+### Features
 
-Navigating the command-line interface of `mkvextract` can be daunting for many users. `gMKVExtractGUI` simplifies this process by offering a robust and responsive desktop application. Written in **C# .NET 4.0**, it ensures high compatibility across a range of Windows operating systems (from Windows XP onward) and is also designed to run smoothly on Linux through Mono (v1.6.4 and newer). While not extensively tested, it may even function on macOS.
+- Analyze MKV/WebM files with `mkvmerge` and `mkvinfo`.
+- Extract tracks, timecodes, cues, chapters, tags, attachments, and CUE sheets
+  with `mkvextract`.
+- Batch jobs, save/load job lists, progress display, logs, abort controls, and
+  overwrite/source-directory options.
+- Custom output filename patterns for video, audio, subtitles, chapters,
+  attachments, tags, timecodes, cues, and CUE sheets.
+- Runtime language switching, dark mode, and an in-app translation editor.
+- First launch follows the system language: Chinese locales default to
+  Simplified Chinese, all other locales default to English.
 
-This tool is perfect for anyone looking to easily extract tracks, timecodes, attachments, chapters, tags, or CUE sheets from Matroska (MKV) files without needing to remember complex command-line arguments. It also leverages `mkvinfo` and `mkvmerge` for rapid analysis of MKV elements.
+### Linux Usage
 
----
+Linux does not use MKVToolNix directory detection. Install the command-line
+tools and keep them on `PATH`, or choose the `mkvmerge` executable in the app.
+The app resolves `mkvmerge`, `mkvinfo`, and `mkvextract` directly.
 
-## Features
+Build and run:
 
-`gMKVExtractGUI` is packed with features to streamline your MKV extraction workflow:
+```bash
+cmake -S . -B build/cpp -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/cpp
+./build/cpp/src/gMKVExtractGUI.Cpp/gMKVExtractGUIQt
+```
 
-* **Complete `mkvextract` Functionality:** Access 100% of `mkvextract`'s capabilities, supporting extraction of tracks, timecodes, attachments, chapters (both XML and OGM), tags, and CUE sheets.
-* **Batch Extraction:** Efficiently extract elements from multiple MKV files at once (available from v2.0.0 and above).
-* **Custom Output Filename Patterns:** Define personalized naming conventions for your extracted files (available from v2.5.0 and above).
-* **Fast MKV Analysis:** Utilizes `mkvinfo` and `mkvmerge` for incredibly quick analysis of MKV file elements.
-* **Automatic Audio Delay Detection:** Automatically finds the audio track's delay relative to video and appends it to the extracted filename for easy synchronization.
-* **Automatic MKVToolNix Detection:** Automatically detects the MKVToolNix installation directory from the Windows registry, no manual path configuration needed.
-* **Standalone Executable:** The `gMKVExtractGUI` executable doesn't need to be placed inside the MKVToolNix directory.
-* **Standard File Extensions:** Uses appropriate file extensions for extracted tracks based on `CODEC_ID` as defined in the official `mkvextract` documentation.
-* **Responsive GUI:** Employs a separate thread for invoking `mkvextract` operations, ensuring a smooth and responsive user interface during long extractions.
-* **Job Mode:** Incorporates a dedicated job mode for managing and executing batch extractions (new in v1.6).
-* **Wide OS Compatibility:**
-    * **Windows:** Supports all versions from Windows XP and above.
-    * **Linux:** Compatible via Mono (from v1.6.4 and above).
-* **High DPI Support:** Designed to work seamlessly in high-DPI environments (available from v2.2.0 and above).
-* **Localization & Live Language Switching:** UI labels, tooltips, popups, and context menus are loaded from JSON translation files and can be switched at runtime from the Options dialog. The same dialog now exposes an in-app translation editor for maintaining locale files. If locale files are missing, the app falls back to its embedded English defaults instead of showing localization placeholders.
-* **Dark Mode:** Includes an optional dark theme with context menus themed consistently across the main windows.
+Install into a staging directory:
 
----
+```bash
+cmake --install build/cpp --prefix build/cpp-install
+./build/cpp-install/bin/gMKVExtractGUIQt
+```
 
-## Project Homepage
+Runtime prerequisites:
 
-For more information, discussions, and support, please visit the project's original homepage:
+- CMake 3.21 or newer for building
+- C++17 compiler
+- Qt 6.2 or newer with Core, Widgets, and Test modules
+- `mkvmerge`, `mkvinfo`, and `mkvextract`
 
-[http://forum.doom9.org/showthread.php?t=170249](http://forum.doom9.org/showthread.php?t=170249)
+### Windows Usage
 
----
+Install MKVToolNix normally. On Windows, the app detects an MKVToolNix
+installation directory and validates that `mkvmerge.exe`, `mkvinfo.exe`, and
+`mkvextract.exe` are present.
 
-## Getting Started
+Build from a Visual Studio and Qt enabled developer prompt:
 
-1.  **Download the Latest Release:** Head over to the [Releases](https://github.com/Gpower2/gMKVExtractGUI/releases) section and download the latest executable.
-2.  **Prerequisites:** On Linux, ensure `mkvmerge`, `mkvinfo`, and `mkvextract`
-    are installed and available on `PATH`. On Windows, install
-    [MKVToolNix](https://mkvtoolnix.download/) so the app can detect its
-    installation directory.
-3.  **Documentation:** For detailed usage instructions, refer to the [User Manual](docs/README.md).
-4.  **Optional Setup:** Open **Options** to choose the UI theme, switch the application language, or launch the in-app **Translations...** editor. The current build ships with `en`, `es`, `de`, `pt`, `pt-br`, `fr`, `el`, `zh-cn`, `zh-tw`, `ja`, `ru`, `it`, `nl`, `pl`, `tr`, `ro`, `hi`, and `ko` locale files.
+```powershell
+cmake -S . -B build\cpp -G "Visual Studio 17 2022" -A x64
+cmake --build build\cpp --config Debug
+ctest --test-dir build\cpp -C Debug --output-on-failure
+cmake --install build\cpp --config Debug --prefix build\cpp-install
+windeployqt build\cpp-install\bin\gMKVExtractGUIQt.exe
+```
 
-### C++/Qt Rewrite
+### Language Files
 
-The native C++/Qt rewrite is being developed side-by-side with the existing C#
-application. Build, install, and packaging notes live in
-[docs/CPP_BUILD_AND_PACKAGE.md](docs/CPP_BUILD_AND_PACKAGE.md).
+Locale JSON files live in
+`src/gMKVExtractGUI.Cpp/resources/locales/gmkvextract-*.json` and are copied
+beside the executable during build/install. English and Simplified Chinese are
+the primary maintained languages for this migration pass, while the existing
+locale set remains available.
 
----
+### Documentation
 
-## Contributing
+- User manual: [docs/README.md](docs/README.md)
+- Build and package notes:
+  [docs/CPP_BUILD_AND_PACKAGE.md](docs/CPP_BUILD_AND_PACKAGE.md)
+- Manual parity checklist:
+  [docs/CPP_MANUAL_PARITY_CHECKLIST.md](docs/CPP_MANUAL_PARITY_CHECKLIST.md)
+- Translator guide: [docs/TRANSLATOR_GUIDE.md](docs/TRANSLATOR_GUIDE.md)
 
-We welcome contributions! If you have suggestions, bug reports, or want to contribute code, please feel free to open an issue or submit a pull request.
+## 中文
 
----
+### 项目状态
+
+- 当前开发 fork：`https://github.com/dibin666/gMKVExtractGUI.git`
+- 当前开发分支：`cpp-migration`
+- 原作者仓库：`https://github.com/Gpower2/gMKVExtractGUI`
+- 旧 C# 源码恢复点：分支 `legacy-csharp-archive`，标签
+  `legacy-csharp-before-cpp-cleanup`
+
+本仓库当前以原生 C++/Qt 程序作为主产品继续开发。原作者仓库保留为
+`upstream`，便于以后同步。
+
+### 功能
+
+- 使用 `mkvmerge` 和 `mkvinfo` 分析 MKV/WebM 文件。
+- 使用 `mkvextract` 提取轨道、时间码、Cue、章节、标签、附件和 CUE
+  Sheet。
+- 支持批量任务、任务保存/加载、进度显示、日志、终止任务、覆盖输出和使用源
+  目录输出。
+- 支持视频、音频、字幕、章节、附件、标签、时间码、Cue、CUE Sheet 的自定义
+  输出文件名模式。
+- 支持运行时切换语言、深色模式和内置翻译编辑器。
+- 首次启动会跟随系统语言：中文系统默认简体中文，其他系统默认英文。
+
+### Linux 使用方式
+
+Linux 下不使用 MKVToolNix 目录检测，也不依赖 `mkvtoolnix` GUI 目录。请安装
+`mkvmerge`、`mkvinfo` 和 `mkvextract`，并将它们放到 `PATH`；也可以在程序中手动
+选择 `mkvmerge` 可执行文件。程序会直接解析这三个命令行工具。
+
+构建并运行：
+
+```bash
+cmake -S . -B build/cpp -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/cpp
+./build/cpp/src/gMKVExtractGUI.Cpp/gMKVExtractGUIQt
+```
+
+安装到临时目录后运行：
+
+```bash
+cmake --install build/cpp --prefix build/cpp-install
+./build/cpp-install/bin/gMKVExtractGUIQt
+```
+
+构建和运行依赖：
+
+- CMake 3.21 或更新版本
+- 支持 C++17 的编译器
+- Qt 6.2 或更新版本，包含 Core、Widgets、Test 模块
+- `mkvmerge`、`mkvinfo`、`mkvextract`
+
+### Windows 使用方式
+
+Windows 下请正常安装 MKVToolNix。程序会检测 MKVToolNix 安装目录，并验证其中
+是否包含 `mkvmerge.exe`、`mkvinfo.exe` 和 `mkvextract.exe`。
+
+在已配置 Visual Studio 和 Qt 的开发命令行中构建：
+
+```powershell
+cmake -S . -B build\cpp -G "Visual Studio 17 2022" -A x64
+cmake --build build\cpp --config Debug
+ctest --test-dir build\cpp -C Debug --output-on-failure
+cmake --install build\cpp --config Debug --prefix build\cpp-install
+windeployqt build\cpp-install\bin\gMKVExtractGUIQt.exe
+```
+
+### 语言文件
+
+语言 JSON 文件位于
+`src/gMKVExtractGUI.Cpp/resources/locales/gmkvextract-*.json`，构建和安装时会
+复制到可执行文件旁边。本次迁移以英文和简体中文作为主要维护语言，同时保留原有
+语言文件。
+
+### 文档
+
+- 用户手册：[docs/README.md](docs/README.md)
+- 构建和打包说明：
+  [docs/CPP_BUILD_AND_PACKAGE.md](docs/CPP_BUILD_AND_PACKAGE.md)
+- 手动对等检查清单：
+  [docs/CPP_MANUAL_PARITY_CHECKLIST.md](docs/CPP_MANUAL_PARITY_CHECKLIST.md)
+- 翻译指南：[docs/TRANSLATOR_GUIDE.md](docs/TRANSLATOR_GUIDE.md)
 
 ## License
 
-This software is dedicated to the **Public Domain** under the terms of **The Unlicense**.
-For more information, please see the [UNLICENSE](https://unlicense.org/) file.
+This software is dedicated to the Public Domain under the terms of
+[The Unlicense](https://unlicense.org/).

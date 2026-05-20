@@ -48,6 +48,7 @@ private slots:
     void loggerShouldAppendTimestampedLines();
     void settingsShouldSaveAndReloadLegacyFormat();
     void settingsShouldFallbackForMalformedValues();
+    void settingsShouldChooseDefaultCultureFromLocale();
     void translationPathServiceShouldNormalizeAliasesAndEnumerateFiles();
     void localizationServiceShouldUseBuiltInEnglishFallback();
     void localizationServiceShouldResolveNeutralAndChineseAliases();
@@ -718,6 +719,13 @@ void CoreTests::settingsShouldFallbackForMalformedValues()
     QCOMPARE(settings.windowSizeWidth, 640);
     QVERIFY(settings.showPopup);
     QCOMPARE(settings.culture, QStringLiteral("en"));
+}
+
+void CoreTests::settingsShouldChooseDefaultCultureFromLocale()
+{
+    QCOMPARE(gmkv::Settings::defaultCultureForLocale(QLocale(QLocale::English, QLocale::UnitedStates)), QStringLiteral("en"));
+    QCOMPARE(gmkv::Settings::defaultCultureForLocale(QLocale(QLocale::Chinese, QLocale::China)), QStringLiteral("zh-cn"));
+    QCOMPARE(gmkv::Settings::defaultCultureForLocale(QLocale(QLocale::Chinese, QLocale::Taiwan)), QStringLiteral("zh-cn"));
 }
 
 void CoreTests::translationPathServiceShouldNormalizeAliasesAndEnumerateFiles()

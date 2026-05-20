@@ -1,15 +1,16 @@
 # C++/Qt Build And Package Notes
 
-The C++ rewrite builds side-by-side with the existing C# application. It does
-not embed the Matroska command-line tools. On Linux, users need `mkvmerge`,
-`mkvinfo`, and `mkvextract` available on `PATH` or can choose the `mkvmerge`
-executable manually. On Windows, users still need MKVToolNix installed so the
-app can detect its installation directory and run the three `.exe` tools.
+The repository now builds the native C++/Qt application as the active product.
+It does not embed the Matroska command-line tools. On Linux, users need
+`mkvmerge`, `mkvinfo`, and `mkvextract` available on `PATH` or can choose the
+`mkvmerge` executable manually. On Windows, users need MKVToolNix installed so
+the app can detect its installation directory and run the three `.exe` tools.
 
-Before calling the rewrite feature-complete, record Linux and Windows evidence
-in [CPP_MANUAL_PARITY_CHECKLIST.md](CPP_MANUAL_PARITY_CHECKLIST.md). On Linux,
-`scripts/cpp_manual_smoke.sh` can generate a tiny MKV fixture and verify the
-local C++ build plus direct `mkvmerge`, `mkvinfo`, and `mkvextract` invocation.
+Record Linux and Windows evidence in
+[CPP_MANUAL_PARITY_CHECKLIST.md](CPP_MANUAL_PARITY_CHECKLIST.md) before release.
+On Linux, `scripts/cpp_manual_smoke.sh` can generate a tiny MKV fixture and
+verify the local C++ build plus direct `mkvmerge`, `mkvinfo`, and `mkvextract`
+invocation.
 
 ## Linux Debug Build
 
@@ -29,9 +30,10 @@ cmake --install build/cpp --prefix build/cpp-install
 ```
 
 The install step places `gMKVExtractGUIQt`, `gmkvextract-*.json`, and
-`gMkvExtractGuiIcon.ico` under the install `bin` directory. Distributions should
-package the required Qt runtime libraries through their normal dependency
-system. An AppImage or distro package can be layered on top of the install tree.
+`gMkvExtractGuiIcon.ico` under the install `bin` directory. Locale source files
+live in `src/gMKVExtractGUI.Cpp/resources/locales`. Distributions should package
+the required Qt runtime libraries through their normal dependency system. An
+AppImage or distro package can be layered on top of the install tree.
 
 ## Windows Debug Build
 

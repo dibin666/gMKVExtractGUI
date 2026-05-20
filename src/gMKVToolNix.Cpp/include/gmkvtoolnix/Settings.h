@@ -3,6 +3,7 @@
 #include "gmkvtoolnix/FilenamePatterns.h"
 #include "gmkvtoolnix/Segments.h"
 
+#include <QLocale>
 #include <QString>
 
 namespace gmkv {
@@ -20,6 +21,8 @@ public:
     explicit Settings(const QString& appPath, const QString& userAppDataPath = QString());
 
     static QString settingsFileName();
+    static QString defaultCulture();
+    static QString defaultCultureForLocale(const QLocale& locale);
     QString settingsPath() const;
     QString settingsFilePath() const;
 

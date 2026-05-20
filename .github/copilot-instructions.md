@@ -1,58 +1,81 @@
-# Copilot instructions — gMKVExtractGUI
+# Copilot instructions - gMKVExtractGUI
 
-## Build, test, and lint commands
+## Build, Test, And Smoke Commands
 
-- This is an older .NET Framework 4.0 solution with non-SDK-style projects. Prefer Visual Studio or `msbuild`; `dotnet build`/`dotnet test` is not the primary workflow here.
-- NuGet packages are checked into `packages\`, so there is usually no separate restore step.
-- The solution defines both `Any CPU` and `x86` configurations.
+This repository is now a native C++/Qt project built with CMake. The active app
+target is `gMKVExtractGUIQt`; the reusable core library target is
+`gMKVToolNixCpp`.
 
-```powershell
-msbuild gMKVExtractGUI.sln /p:Configuration=Debug /p:Platform="Any CPU"
-msbuild src\gMKVExtractGUI\gMKVExtractGUI.csproj /p:Configuration=Debug /p:Platform="Any CPU"
-msbuild src\gMKVToolNix.Translator.Console\gMKVToolNix.Translator.Console.csproj /p:Configuration=Debug /p:Platform="Any CPU"
-msbuild tests\gMKVToolnix.Unit.Tests\gMKVToolnix.Unit.Tests.csproj /p:Configuration=Debug /p:Platform="Any CPU"
-
-vstest.console.exe tests\gMKVToolnix.Unit.Tests\bin\Debug\gMKVToolNix.Unit.Tests.dll
-vstest.console.exe tests\gMKVToolnix.Unit.Tests\bin\Debug\gMKVToolNix.Unit.Tests.dll /Tests:gMKVToolnix.Unit.Tests.gMkvParser_Tests.VersionOutput_ShouldBe_Parsed_Successfully
+```bash
+cmake -S . -B build/cpp -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/cpp
+/usr/bin/ctest --test-dir build/cpp --output-on-failure
+cmake --install build/cpp --prefix build/cpp-install
+scripts/cpp_manual_smoke.sh
 ```
 
-- Lint: no repository lint command is configured.
+Windows builds should use Visual Studio 2022, Qt for MSVC, and `windeployqt`
+after install:
 
-## High-level architecture
+```powershell
+cmake -S . -B build\cpp -G "Visual Studio 17 2022" -A x64
+cmake --build build\cpp --config Debug
+ctest --test-dir build\cpp -C Debug --output-on-failure
+cmake --install build\cpp --config Debug --prefix build\cpp-install
+windeployqt build\cpp-install\bin\gMKVExtractGUIQt.exe
+```
 
-- The solution has four projects:
-  - `src\gMKVExtractGUI` - WinForms front end. `Program.Main` initializes localization, then launches `Forms\frmMain2` (not `frmMain`).
-  - `src\gMKVToolNix` - core library around `mkvmerge`, `mkvinfo`, and `mkvextract`; owns segment models, parsing, filename pattern logic, process helpers, and logging.
-  - `src\gMKVToolNix.Translator.Console` - localization maintenance CLI with `scan`, `master`, `template`, and `sync` verbs.
-  - `tests\gMKVToolnix.Unit.Tests` - MSTest coverage for version parsing and file naming helpers in the core library.
+Lint: no repository lint command is configured. Run `git diff --check` and scan
+for debug output before committing.
 
-- File analysis in the GUI is a merged-tool pipeline. `frmMain2` calls `gMKVHelper.GetMergedMkvSegmentList`, which uses `gMKVMerge` as the primary source, fills in missing segment info / codec private data / delays with `gMKVInfo`, then turns the merged `gMKVSegment` list into the checked tree shown in the main form.
+## High-Level Architecture
 
-- Extraction uses the same job model for immediate runs and queued runs. `frmMain2` builds `gMKVExtractSegmentsParameters` and wraps them in `gMKVJob`; clicking **Extract** runs those jobs immediately, while **Add Jobs** sends the same objects to `frmJobManager`. `gMKVExtract` groups track parameters by extraction mode and shells out to `mkvextract`, including version-specific handling for chapters, cue sheets, tags, and raw/fullraw modes.
+- `CMakeLists.txt` - root CMake entry point.
+- `src/gMKVToolNix.Cpp` - QtCore-based library for MKVToolNix process planning,
+  tool discovery, version parsing, segment models, settings, logging, jobs,
+  filename patterns, extraction planning, and JSON localization.
+- `src/gMKVExtractGUI.Cpp` - Qt Widgets desktop application. `main.cpp`
+  initializes settings and localization, then opens `MainWindow`.
+- `tests/gMKVToolNix.Cpp.Tests` - Qt Test coverage for core behavior and
+  headless GUI smoke paths.
+- `scripts/cpp_manual_smoke.sh` - Linux smoke script that creates a tiny MKV
+  fixture and verifies direct `mkvmerge`, `mkvinfo`, and `mkvextract` usage.
 
-- Three services cut across most UI work:
-  - `gSettings` persists `gMKVExtractGUI.ini` in the application directory when writable, otherwise under `Application.UserAppDataPath`.
-  - `LocalizationManager` loads and caches `gmkvextract-*.json` translations from the executable directory, serves `LocalizationManager.GetString(...)` lookups for the active culture, and rebuilds the cache on `LocalizationManager.Reload(...)`. If no prefixed files exist yet, the shared path helper temporarily falls back to legacy bare `<culture>.json` names.
-  - `ThemeManager` plus `WinAPI\NativeMethods` apply light/dark styling to stock controls and the custom `g*` controls. Context menus should go through `ThemeManager.ApplyContextMenuTheme(...)` rather than direct popup-window retheming.
+File analysis is a merged-tool pipeline. `SegmentAnalyzer` uses `MkvMergeService`
+as the primary structured source, supplements missing details with
+`MkvInfoService`, then feeds segment models to the Qt main window.
 
-- MKVToolNix path discovery is part of startup behavior. `frmMain2` accepts `--mkvtoolnix=...`, otherwise falls back to the saved setting, the current directory, the Windows registry, or `/usr/bin` on Linux/Mono.
+Extraction uses planned command arguments from `MkvExtractPlanner` and runs
+them through `MkvExtractRunner`. Immediate extraction and queued jobs share the
+same segment and filename-pattern contracts.
 
-## Key conventions
+## Platform Contracts
 
-- All repository text files must use **UTF-8 without BOM** and **CRLF** line endings. When editing an existing text file or creating a new one, keep or write it in that format, and normalize touched files if they are not already compliant. The repository root `.editorconfig` and `.gitattributes` encode this convention.
+- Linux resolves direct command tools: `mkvmerge`, `mkvinfo`, and `mkvextract`.
+  Empty settings use `PATH`; a manual value may point to the `mkvmerge`
+  executable or a compatible directory.
+- Windows resolves an MKVToolNix directory that contains `mkvmerge.exe`,
+  `mkvinfo.exe`, and `mkvextract.exe`. Registry candidates are Windows-only.
+- Do not introduce Linux dependencies on the MKVToolNix GUI directory.
+- Windows smoke/build evidence must be gathered on a Windows host unless the
+  project owner explicitly waives it.
 
-- The GUI project lives in `src\gMKVExtractGUI`, but most namespaces are still `gMKVToolNix`. Search by namespace as well as by folder name when tracing UI code.
+## Key Conventions
 
-- Prefer the custom controls in `src\gMKVExtractGUI\Controls` (`gForm`, `gTreeView`, `gTextBox`, `gDataGridView`, etc.) instead of introducing new one-off wrappers. Theme and dark-mode behavior is centralized in `ThemeManager`, so new forms and context menus should follow that pattern.
-
-- Filename pattern work spans three places: placeholder constants in `gMKVExtractFilenamePatterns`, persisted defaults in `gSettings`, and the add-placeholder/default UI in `frmOptions`. Changing only one of those will leave the app inconsistent.
-
-- Localization work is JSON-first. Runtime strings come from `src\gMKVExtractGUI\gmkvextract-en.json` and `LocalizationManager.GetString(...)`, but `src\gMKVExtractGUI\Localization\JsonLocalizationService.Defaults.cs` also carries the embedded English fallback set. Translation-file maintenance now flows through the shared helpers in `src\gMKVToolNix\Localization`, which are used by both the in-app `frmTranslationEditor` UI and `src\gMKVToolNix.Translator.Console`. If you add a new culture file, include it in `src\gMKVExtractGUI\gMKVExtractGUI.csproj` with `CopyToOutputDirectory` so the runtime loader and culture picker can see it.
-
-- Use `LocalizationManager.GetString(...)` for current-culture lookups and `LocalizationManager.GetStringForCulture(...)` only when a caller truly needs an explicit culture. The old public `GetString(key, culture)` shape was removed because it conflicted with formatted `GetString(key, params object[])` calls.
-
-- For popup menus, keep the built-in WinForms menu styling path and avoid calling `NativeMethods.SetWindowThemeManaged(...)` on `ToolStripDropDown` popup handles during `Opening`; that retheming path was the source of the earlier menu race/heap-corruption issue.
-
-- Job definitions are serialized to XML. If you add job fields or new segment subtypes, keep `gMKVJob` serialization attributes (`[Serializable]`, `XmlInclude`) aligned with `frmJobManager` save/load behavior for `List<gMKVJobInfo>`.
-
-- Segment metadata changes usually span both parsers. The UI relies on the merged result from `gMKVMerge`, `gMKVInfo`, and `gMKVHelper.GetMergedMkvSegmentList`, so parser changes often need coordinated updates in more than one class.
+- Text files use UTF-8 without BOM and CRLF line endings, except shell scripts,
+  which stay LF and executable.
+- Visible UI strings go through the JSON localization contract. Add English keys
+  to `src/gMKVExtractGUI.Cpp/resources/locales/gmkvextract-en.json`; update
+  Simplified Chinese in `gmkvextract-zh-cn.json` for user-facing C++ UI changes.
+- Locale files are copied beside the executable during build/install. Missing
+  locale folders must still fall back to built-in English strings.
+- First launch defaults to Simplified Chinese for Chinese system locales and
+  English otherwise. Saved `Culture:` settings still win.
+- Use Qt containers and `QString`/`QStringList` consistently inside the Qt-based
+  library and GUI.
+- Keep tool discovery behavior centralized in `ToolLocator`; do not duplicate
+  command lookup logic in UI code.
+- Keep filename-pattern defaults, option persistence, UI placeholder menus, and
+  extraction naming tests aligned when adding or changing placeholders.
+- Job definitions are serialized to XML. If job fields or segment subtypes
+  change, update save/load tests and the Job Manager flow together.

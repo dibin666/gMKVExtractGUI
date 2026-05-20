@@ -32,9 +32,9 @@ set_target_properties(gMKVExtractGUIQt PROPERTIES
 )
 
 file(GLOB GMKV_LOCALE_FILES CONFIGURE_DEPENDS
-    "${PROJECT_SOURCE_DIR}/src/gMKVExtractGUI/gmkvextract-*.json"
+    "${CMAKE_CURRENT_SOURCE_DIR}/resources/locales/gmkvextract-*.json"
 )
-set(GMKV_ICON_FILE "${PROJECT_SOURCE_DIR}/src/gMKVExtractGUI/Images/gMkvExtractGuiIcon.ico")
+set(GMKV_ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resources/gMkvExtractGuiIcon.ico")
 
 if(WIN32)
     file(TO_NATIVE_PATH "${GMKV_ICON_FILE}" GMKV_WINDOWS_ICON_FILE_NATIVE)

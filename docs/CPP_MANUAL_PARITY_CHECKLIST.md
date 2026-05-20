@@ -1,9 +1,9 @@
 # C++/Qt Manual Parity Checklist
 
-Use this checklist before declaring the C++ rewrite feature-complete. The C++
-app remains side-by-side with the C# application until this checklist has real
-Linux evidence. Windows smoke evidence is retained for release packaging, but it
-was explicitly skipped for the 2026-05-20 implementation pass by user request.
+Use this checklist before declaring the C++/Qt application release-ready. Linux
+evidence is required for the active branch. Windows smoke evidence is retained
+for release packaging, but it was explicitly skipped for the 2026-05-20
+implementation pass by user request.
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ mode, then asserts representative controls exist in each window.
 
 | Check | Expected Result | Evidence |
 | --- | --- | --- |
-| Launch without .NET/Mono | Qt app opens directly | |
+| Launch native Qt app | Qt app opens directly without managed runtime requirements | |
 | Linux MKV tools Browse and Auto Detect | `mkvmerge` executable or PATH tools are accepted; missing commands are rejected | |
 | Windows MKVToolNix path Browse and Auto Detect | Valid MKVToolNix folder is accepted; invalid folder is rejected | |
 | Drag/drop file | File appears in input tree and selected-file info updates | |
@@ -62,8 +62,8 @@ mode, then asserts representative controls exist in each window.
 
 ## Extraction Modes
 
-Run each mode against representative input and compare output names with the C#
-reference app using the same settings file and filename patterns.
+Run each mode against representative input and compare output names with the
+documented filename patterns and expected MKVToolNix command behavior.
 
 | Mode | Expected Result | Evidence |
 | --- | --- | --- |

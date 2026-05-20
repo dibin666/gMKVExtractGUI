@@ -1,6 +1,8 @@
 # gMKVExtractGUI User Manual
 
-This manual describes the user interface and functionality of gMKVExtractGUI, organized by each main window (form) in the application. It is intended for end-users.
+This manual describes the user interface and functionality of the native
+C++/Qt gMKVExtractGUI application, organized by each main window. It is intended
+for end-users.
 
 If you are editing or creating locale files, see the dedicated [Translator Guide](TRANSLATOR_GUIDE.md).
 
@@ -93,7 +95,8 @@ If you are editing or creating locale files, see the dedicated [Translator Guide
 - **Advanced Options:**
   - **Language / Culture:**
     - Dropdown to select the application language at runtime.
-    - Available cultures are loaded from the `gmkvextract-*.json` translation files that ship with the app.
+    - On first launch, Chinese system locales default to Simplified Chinese and other system locales default to English.
+    - Available cultures are loaded from the `gmkvextract-*.json` translation files that ship with the app. Source locale files live in `src/gMKVExtractGUI.Cpp/resources/locales`.
     - Changing the culture immediately refreshes the open windows.
     - If the locale files are missing, the application falls back to its built-in English strings.
   - **Translations...:**

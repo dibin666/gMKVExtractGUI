@@ -13,7 +13,7 @@ extraction naming, tests, and packaging documentation.
 
 | Requirement | Evidence | Status |
 | --- | --- | --- |
-| C++ desktop app, side-by-side with C# | Root `CMakeLists.txt`, `src/gMKVToolNix.Cpp`, `src/gMKVExtractGUI.Cpp`, `tests/gMKVToolNix.Cpp.Tests` | Implemented |
+| C++ desktop app as active product | Root `CMakeLists.txt`, `src/gMKVToolNix.Cpp`, `src/gMKVExtractGUI.Cpp`, `tests/gMKVToolNix.Cpp.Tests` | Implemented |
 | Qt 6 Widgets and CMake | `find_package(Qt6 6.2 REQUIRED COMPONENTS Core Widgets)`, `qt_add_executable(gMKVExtractGUIQt)` | Implemented |
 | Main window workflow | `MainWindow` covers tool path, input tree, output options, extraction modes, jobs, logs, options, abort controls | Implemented; covered by headless structural smoke |
 | Options, Log, Job Manager, Translation Editor | Dedicated Qt dialogs exist and are constructed by `--smoke-test`, which asserts representative controls in each window | Implemented; covered by headless structural smoke |
@@ -22,7 +22,7 @@ extraction naming, tests, and packaging documentation.
 | Extract supported elements/modes | `MkvExtractPlanner`, `MkvExtractRunner`, extraction naming tests, Linux smoke extracts tracks, timestamps, cues, chapters, tags, attachments, and CUE sheet | Implemented; combined-mode GUI parity still needs manual UI evidence |
 | Filename pattern parity | C++ filename pattern defaults, placeholder replacement, extension mapping, collision tests | Automated tests pass |
 | Settings compatibility | Legacy settings load/save tests and GUI settings wiring | Automated tests pass |
-| Localization compatibility | Existing JSON files staged; fallback, aliases, bad format, sync/template tests; UI strings use JSON keys | Automated tests pass |
+| Localization compatibility | Existing JSON files staged from `src/gMKVExtractGUI.Cpp/resources/locales`; fallback, aliases, bad format, sync/template tests; UI strings use JSON keys | Automated tests pass |
 | Jobs | XML save/load, queue duplicate rejection, Job Manager controller wiring | Automated tests pass; manual restart parity evidence still pending |
 | Responsive long-running work and abort | Analysis thread, extraction controller, abort/abort-all wiring | Implemented; manual long-run evidence pending |
 | Linux build/launch/package | Configure/build/ctest/install passed on Linux Mint 22.3; `scripts/cpp_manual_smoke.sh` passed | Validated |
@@ -32,6 +32,6 @@ extraction naming, tests, and packaging documentation.
 
 ## Current Completion Decision
 
-Do not mark the task complete yet. The implementation is in a validated Linux
-state, but the acceptance goal still has weak or missing evidence for Windows
-host validation and full manual GUI parity rows.
+The C++ application has validated Linux evidence and active-tree packaging docs.
+Windows host validation and full manual GUI parity rows still need dated
+evidence before a release claim.

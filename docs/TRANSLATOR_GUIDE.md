@@ -4,15 +4,13 @@ This guide is for translators and localization maintainers who need to edit an e
 
 ## Choose the Right Workflow
 
-- **Most translators:** use the in-app editor from **Options -> Translations...**
-- **Developers or release maintainers:** use `gMKVToolNix.Translator.Console` for `scan`, `master`, `template`, and `sync`
-
-The GUI editor and the console now use the same shared translation services, so creating or syncing a locale in either place follows the same rules.
+Use the in-app editor from **Options -> Translations...**. The old standalone
+translator console is no longer part of the active C++ tree.
 
 ## Before You Start
 
 1. Keep `gmkvextract-en.json` in the same translation directory as the locale files you want to edit.
-2. Start the application from a folder that already contains the translation JSON files.
+2. Start the application from a folder that already contains the translation JSON files. In source builds, they live under `src/gMKVExtractGUI.Cpp/resources/locales` and are copied beside the executable by CMake.
 3. Use short, UI-friendly translations when possible; some controls can grow at runtime now, but concise strings still produce the best fit.
 4. Do not rename localization keys or change the English source text in non-English files.
 5. On Windows, Linux, or macOS, make sure the host system has script-capable fonts installed for languages such as Hindi, Japanese, Simplified Chinese, Traditional Chinese, and Korean. The GUI now tries to pick common fonts automatically for those locales, but glyph coverage still depends on the local font set.
@@ -79,13 +77,9 @@ After saving a locale:
 4. For script-heavy locales such as Hindi, Japanese, Simplified Chinese, Traditional Chinese, and Korean, also verify that the text renders with readable glyphs on the target OS.
 5. If a translation is technically correct but visually too long, shorten it and save again.
 
-## When to Use the Console Instead
+## Maintenance Notes
 
-Use `src\gMKVToolNix.Translator.Console` when you need to:
-
-- scan source code for hardcoded strings
-- rebuild or refresh the master `gmkvextract-en.json`
-- create or sync locale files in automation or CI-style workflows
-- batch-maintain locale files without launching the GUI
-
-For the full command reference, see `src\gMKVToolNix.Translator.Console\README.md`.
+Developers should keep visible Qt strings in the JSON localization contract:
+add the English entry to `gmkvextract-en.json`, add or sync the target locale,
+and keep the built-in English fallback aligned when a string must survive a
+missing locale directory.
