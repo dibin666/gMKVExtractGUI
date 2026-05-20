@@ -72,4 +72,8 @@ if(GMKV_BUILD_CPP_TESTS)
     set_tests_properties(gMKVExtractGUIQtSmoke PROPERTIES
         ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
     )
+    add_test(NAME gMKVExtractGUIQtSelectionSmoke COMMAND gMKVExtractGUIQt --selection-smoke-test)
+    set_tests_properties(gMKVExtractGUIQtSelectionSmoke PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+    )
 endif()

@@ -160,6 +160,9 @@ int main(int argc, char* argv[])
     if (arguments.contains(QStringLiteral("--smoke-test"))) {
         return runSmokeTest(mainWindow);
     }
+    if (arguments.contains(QStringLiteral("--selection-smoke-test"))) {
+        return mainWindow.runSelectionSmokeTest();
+    }
 
     return QApplication::exec();
 }

@@ -22,6 +22,7 @@
 #include <QDirIterator>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
@@ -41,6 +42,7 @@
 #include <QScopeGuard>
 #include <QSignalBlocker>
 #include <QStatusBar>
+#include <QTemporaryDir>
 #include <QTextEdit>
 #include <QThread>
 #include <QTreeWidget>
@@ -814,7 +816,7 @@ void MainWindow::appendAnalyzedFile(const QString& filename, const QList<gmkv::S
     });
     fileItem->setData(0, FileIndexRole, fileIndex);
     fileItem->setData(0, SegmentIndexRole, -1);
-    fileItem->setFlags(fileItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsAutoTristate);
+    fileItem->setFlags(fileItem->flags() | Qt::ItemIsUserCheckable);
     fileItem->setCheckState(0, Qt::Checked);
 
     for (qsizetype segmentIndex = 0; segmentIndex < segments.size(); ++segmentIndex) {
@@ -912,7 +914,11 @@ void MainWindow::handleTreeItemChanged(QTreeWidgetItem* item, int column)
     });
 
     if (item->parent() == nullptr) {
-        const Qt::CheckState state = item->checkState(0) == Qt::Unchecked ? Qt::Unchecked : Qt::Checked;
+        if (item->checkState(0) == Qt::PartiallyChecked) {
+            return;
+        }
+
+        const Qt::CheckState state = item->checkState(0);
         for (int childIndex = 0; childIndex < item->childCount(); ++childIndex) {
             item->child(childIndex)->setCheckState(0, state);
         }
@@ -1521,6 +1527,81 @@ gmkv::Job MainWindow::createJob(int fileIndex, const QList<gmkv::SegmentPtr>& se
     }
 
     return job;
+}
+
+int MainWindow::runSelectionSmokeTest()
+{
+    QTemporaryDir toolDir;
+    QTemporaryDir outputDir;
+    if (!toolDir.isValid() || !outputDir.isValid()) {
+        return 10;
+    }
+
+    for (const gmkv::MkvTool tool : { gmkv::MkvTool::Merge, gmkv::MkvTool::Info, gmkv::MkvTool::Extract }) {
+        QFile file(gmkv::MkvToolNix::executablePath(toolDir.path(), tool));
+        if (!file.open(QIODevice::WriteOnly)) {
+            return 11;
+        }
+    }
+
+    m_mkvToolNixPathEdit->setText(toolDir.path());
+    m_outputDirectoryEdit->setText(outputDir.path());
+    m_useSourceDirectoryCheckBox->setChecked(false);
+    m_extractionModeCombo->setCurrentText(gmkv::toString(gmkv::FormMkvExtractionMode::Tracks));
+
+    clearInputFiles();
+
+    auto video = std::make_shared<gmkv::Track>();
+    video->trackNumber = 1;
+    video->trackID = 0;
+    video->trackType = gmkv::MkvTrackType::Video;
+    video->codecID = QStringLiteral("V_MPEG4/ISO/AVC");
+
+    auto audio = std::make_shared<gmkv::Track>();
+    audio->trackNumber = 2;
+    audio->trackID = 1;
+    audio->trackType = gmkv::MkvTrackType::Audio;
+    audio->codecID = QStringLiteral("A_AAC");
+
+    auto subtitles = std::make_shared<gmkv::Track>();
+    subtitles->trackNumber = 3;
+    subtitles->trackID = 2;
+    subtitles->trackType = gmkv::MkvTrackType::Subtitles;
+    subtitles->codecID = QStringLiteral("S_TEXT/UTF8");
+
+    appendAnalyzedFile(
+        outputDir.filePath(QStringLiteral("selection-smoke.mkv")),
+        { video, audio, subtitles });
+    QApplication::processEvents();
+
+    QTreeWidgetItem* fileItem = m_inputTree->topLevelItem(0);
+    if (fileItem == nullptr || fileItem->childCount() != 3) {
+        return 12;
+    }
+
+    fileItem->child(0)->setCheckState(0, Qt::Unchecked);
+    QApplication::processEvents();
+    fileItem->child(2)->setCheckState(0, Qt::Unchecked);
+    QApplication::processEvents();
+
+    if (fileItem->checkState(0) != Qt::PartiallyChecked
+        || fileItem->child(0)->checkState(0) != Qt::Unchecked
+        || fileItem->child(1)->checkState(0) != Qt::Checked
+        || fileItem->child(2)->checkState(0) != Qt::Unchecked) {
+        return 13;
+    }
+
+    const QList<gmkv::Job> jobs = createJobsFromSelection();
+    if (jobs.size() != 1 || jobs[0].parameters.segmentsToExtract.size() != 1) {
+        return 14;
+    }
+
+    const auto selectedTrack = std::dynamic_pointer_cast<gmkv::Track>(jobs[0].parameters.segmentsToExtract[0]);
+    if (!selectedTrack || selectedTrack->trackID != audio->trackID) {
+        return 15;
+    }
+
+    return 0;
 }
 
 void MainWindow::addSelectedJobs()
