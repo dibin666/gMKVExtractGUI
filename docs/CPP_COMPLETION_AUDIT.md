@@ -14,8 +14,8 @@ settings, jobs, extraction naming, tests, and packaging documentation.
 | --- | --- | --- |
 | C++ desktop app, side-by-side with C# | Root `CMakeLists.txt`, `src/gMKVToolNix.Cpp`, `src/gMKVExtractGUI.Cpp`, `tests/gMKVToolNix.Cpp.Tests` | Implemented |
 | Qt 6 Widgets and CMake | `find_package(Qt6 6.2 REQUIRED COMPONENTS Core Widgets)`, `qt_add_executable(gMKVExtractGUIQt)` | Implemented |
-| Main window workflow | `MainWindow` covers tool path, input tree, output options, extraction modes, jobs, logs, options, abort controls | Implemented; covered by headless construction smoke |
-| Options, Log, Job Manager, Translation Editor | Dedicated Qt dialogs exist and are constructed by `--smoke-test` | Implemented; covered by headless construction smoke |
+| Main window workflow | `MainWindow` covers tool path, input tree, output options, extraction modes, jobs, logs, options, abort controls | Implemented; covered by headless structural smoke |
+| Options, Log, Job Manager, Translation Editor | Dedicated Qt dialogs exist and are constructed by `--smoke-test`, which asserts representative controls in each window | Implemented; covered by headless structural smoke |
 | MKVToolNix auto-detection | `ToolLocator` searches explicit/saved/app paths, Windows registry, Linux `/usr/bin`, then PATH | Implemented; Linux behavior validated |
 | Analyze MKV files | `SegmentAnalyzer`, `MkvMergeService`, `MkvInfoService`, and `gMKVExtractGUIQt --analyze-smoke-test` against the generated Linux fixture | Implemented; Linux app-core smoke validated |
 | Extract supported elements/modes | `MkvExtractPlanner`, `MkvExtractRunner`, extraction naming tests, Linux smoke extracts tracks, timestamps, cues, chapters, tags, attachments, and CUE sheet | Implemented; combined-mode GUI parity still needs manual UI evidence |

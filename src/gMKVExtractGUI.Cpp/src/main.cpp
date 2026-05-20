@@ -8,14 +8,63 @@
 #include "gmkvtoolnix/Settings.h"
 
 #include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QCoreApplication>
 #include <QFileInfo>
+#include <QLabel>
+#include <QLineEdit>
+#include <QProgressBar>
+#include <QPushButton>
 #include <QStringList>
+#include <QTableWidget>
+#include <QTextEdit>
+#include <QTreeWidget>
 #include <QWidget>
 
 #include <memory>
 
 namespace {
+
+template <typename T>
+bool hasAtLeast(QObject* root, qsizetype minimumCount)
+{
+    return root->findChildren<T*>().size() >= minimumCount;
+}
+
+bool smokeWidgetStructureLooksComplete(
+    gmkv::gui::MainWindow& mainWindow,
+    gmkv::gui::OptionsDialog& optionsDialog,
+    gmkv::gui::LogWindow& logWindow,
+    gmkv::gui::JobManagerWindow& jobManagerWindow,
+    gmkv::gui::TranslationEditorDialog& translationEditorDialog)
+{
+    return hasAtLeast<QTreeWidget>(&mainWindow, 1)
+        && hasAtLeast<QLineEdit>(&mainWindow, 2)
+        && hasAtLeast<QComboBox>(&mainWindow, 2)
+        && hasAtLeast<QCheckBox>(&mainWindow, 5)
+        && hasAtLeast<QPushButton>(&mainWindow, 8)
+        && hasAtLeast<QProgressBar>(&mainWindow, 2)
+        && hasAtLeast<QTextEdit>(&mainWindow, 1)
+        && hasAtLeast<QLineEdit>(&optionsDialog, 6)
+        && hasAtLeast<QComboBox>(&optionsDialog, 1)
+        && hasAtLeast<QCheckBox>(&optionsDialog, 3)
+        && hasAtLeast<QPushButton>(&optionsDialog, 10)
+        && hasAtLeast<QTextEdit>(&optionsDialog, 1)
+        && hasAtLeast<QTextEdit>(&logWindow, 1)
+        && hasAtLeast<QPushButton>(&logWindow, 5)
+        && hasAtLeast<QTableWidget>(&jobManagerWindow, 1)
+        && hasAtLeast<QProgressBar>(&jobManagerWindow, 2)
+        && hasAtLeast<QCheckBox>(&jobManagerWindow, 1)
+        && hasAtLeast<QPushButton>(&jobManagerWindow, 6)
+        && hasAtLeast<QLabel>(&jobManagerWindow, 3)
+        && hasAtLeast<QTableWidget>(&translationEditorDialog, 1)
+        && hasAtLeast<QComboBox>(&translationEditorDialog, 1)
+        && hasAtLeast<QLineEdit>(&translationEditorDialog, 2)
+        && hasAtLeast<QCheckBox>(&translationEditorDialog, 1)
+        && hasAtLeast<QPushButton>(&translationEditorDialog, 4)
+        && hasAtLeast<QLabel>(&translationEditorDialog, 2);
+}
 
 int runSmokeTest(gmkv::gui::MainWindow& mainWindow)
 {
@@ -36,6 +85,13 @@ int runSmokeTest(gmkv::gui::MainWindow& mainWindow)
         QApplication::processEvents();
     }
 
+    const bool structureOk = smokeWidgetStructureLooksComplete(
+        mainWindow,
+        optionsDialog,
+        logWindow,
+        jobManagerWindow,
+        translationEditorDialog);
+
     for (QWidget* widget : { static_cast<QWidget*>(&translationEditorDialog),
              static_cast<QWidget*>(&jobManagerWindow),
              static_cast<QWidget*>(&logWindow),
@@ -45,7 +101,7 @@ int runSmokeTest(gmkv::gui::MainWindow& mainWindow)
         QApplication::processEvents();
     }
 
-    return 0;
+    return structureOk ? 0 : 5;
 }
 
 int runAnalysisSmokeTest(const QString& mkvToolNixDirectory, const QString& inputFile)

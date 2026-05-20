@@ -36,7 +36,7 @@ chapters, tags, attachments, and a CUE sheet with `mkvextract`, and ran
 the C++ analyzer sees video, audio, subtitles, chapters, and attachments. It
 also ran `gMKVExtractGUIQt --smoke-test`. The Qt smoke path constructs and shows
 the Main, Options, Log, Job Manager, and Translation Editor windows in offscreen
-mode.
+mode, then asserts representative controls exist in each window.
 
 ## Main Window
 
