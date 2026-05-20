@@ -5,8 +5,9 @@ Audit date: 2026-05-20
 ## Objective
 
 Rewrite gMKVExtractGUI as a C++/Qt desktop app with functional UI parity and
-Linux/Windows support, while preserving MKVToolNix integration, localization,
-settings, jobs, extraction naming, tests, and packaging documentation.
+Linux/Windows support, while preserving Linux `mkvmerge`/`mkvinfo`/`mkvextract`
+integration, Windows MKVToolNix detection, localization, settings, jobs,
+extraction naming, tests, and packaging documentation.
 
 ## Prompt-To-Artifact Checklist
 
@@ -16,7 +17,7 @@ settings, jobs, extraction naming, tests, and packaging documentation.
 | Qt 6 Widgets and CMake | `find_package(Qt6 6.2 REQUIRED COMPONENTS Core Widgets)`, `qt_add_executable(gMKVExtractGUIQt)` | Implemented |
 | Main window workflow | `MainWindow` covers tool path, input tree, output options, extraction modes, jobs, logs, options, abort controls | Implemented; covered by headless structural smoke |
 | Options, Log, Job Manager, Translation Editor | Dedicated Qt dialogs exist and are constructed by `--smoke-test`, which asserts representative controls in each window | Implemented; covered by headless structural smoke |
-| MKVToolNix auto-detection | `ToolLocator` searches explicit/saved/app paths, Windows registry, Linux `/usr/bin`, then PATH | Implemented; Linux behavior validated |
+| Tool auto-detection | Linux resolves `mkvmerge`, `mkvinfo`, and `mkvextract` directly through saved/app locations or PATH; Windows keeps MKVToolNix directory and registry discovery | Implemented; Linux behavior validated |
 | Analyze MKV files | `SegmentAnalyzer`, `MkvMergeService`, `MkvInfoService`, and `gMKVExtractGUIQt --analyze-smoke-test` against the generated Linux fixture | Implemented; Linux app-core smoke validated |
 | Extract supported elements/modes | `MkvExtractPlanner`, `MkvExtractRunner`, extraction naming tests, Linux smoke extracts tracks, timestamps, cues, chapters, tags, attachments, and CUE sheet | Implemented; combined-mode GUI parity still needs manual UI evidence |
 | Filename pattern parity | C++ filename pattern defaults, placeholder replacement, extension mapping, collision tests | Automated tests pass |

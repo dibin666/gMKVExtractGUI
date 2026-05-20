@@ -456,12 +456,17 @@ QList<SegmentPtr> SegmentMerger::mergeMkvMergeAndInfoSegments(QList<SegmentPtr> 
 
 QList<SegmentPtr> SegmentAnalyzer::analyzeFile(const QString& mkvToolNixDirectory, const QString& inputFile)
 {
-    if (!MkvToolNix::isToolDirectory(mkvToolNixDirectory)) {
-        throw std::runtime_error(QStringLiteral("Invalid MKVToolNix directory: %1").arg(mkvToolNixDirectory).toStdString());
+    return analyzeFile(MkvToolNix::toolPathsFromLocation(mkvToolNixDirectory), inputFile);
+}
+
+QList<SegmentPtr> SegmentAnalyzer::analyzeFile(const MkvToolPaths& toolPaths, const QString& inputFile)
+{
+    if (!toolPaths.isValid()) {
+        throw std::runtime_error("Could not find mkvmerge, mkvinfo, and mkvextract.");
     }
 
-    const QString mkvmerge = MkvToolNix::executablePath(mkvToolNixDirectory, MkvTool::Merge);
-    const QString mkvinfo = MkvToolNix::executablePath(mkvToolNixDirectory, MkvTool::Info);
+    const QString mkvmerge = toolPaths.path(MkvTool::Merge);
+    const QString mkvinfo = toolPaths.path(MkvTool::Info);
 
     const ProcessResult mergeResult = ProcessRunner::run(
         mkvmerge,

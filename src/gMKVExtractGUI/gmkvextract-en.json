@@ -477,10 +477,58 @@
       "Notes": "Context menu item to use default directory"
     },
     "UI.MainForm2.Config.Group": {
-      "Source": "MKVToolnix Directory (you can drag and drop the directory)",
-      "Translation": "MKVToolnix Directory (you can drag and drop the directory)",
+      "Source": "Tool Configuration",
+      "Translation": "Tool Configuration",
       "IsTranslated": true,
-      "Notes": "GroupBox label for MKVToolnix directory in main form 2"
+      "Notes": "GroupBox label for MKV command tool configuration in main form 2"
+    },
+    "UI.MainForm2.Config.LinuxToolsLabel": {
+      "Source": "MKV tools:",
+      "Translation": "MKV tools:",
+      "IsTranslated": true,
+      "Notes": "Label for Linux mkvmerge/mkvinfo/mkvextract command configuration"
+    },
+    "UI.MainForm2.Config.WindowsPathLabel": {
+      "Source": "MKVToolNix Path:",
+      "Translation": "MKVToolNix Path:",
+      "IsTranslated": true,
+      "Notes": "Label for Windows MKVToolNix directory configuration"
+    },
+    "UI.MainForm2.Config.LinuxToolsPlaceholder": {
+      "Source": "Auto-detect from PATH or choose mkvmerge",
+      "Translation": "Auto-detect from PATH or choose mkvmerge",
+      "IsTranslated": true,
+      "Notes": "Placeholder for Linux mkv command tool configuration"
+    },
+    "UI.MainForm2.Config.WindowsPathPlaceholder": {
+      "Source": "MKVToolNix path",
+      "Translation": "MKVToolNix path",
+      "IsTranslated": true,
+      "Notes": "Placeholder for Windows MKVToolNix directory configuration"
+    },
+    "UI.MainForm2.Config.LinuxToolsDialogTitle": {
+      "Source": "Select mkvmerge",
+      "Translation": "Select mkvmerge",
+      "IsTranslated": true,
+      "Notes": "Dialog title for choosing the Linux mkvmerge executable"
+    },
+    "UI.MainForm2.Config.LinuxToolsTitle": {
+      "Source": "MKV tools",
+      "Translation": "MKV tools",
+      "IsTranslated": true,
+      "Notes": "Dialog title for Linux MKV command tool warnings"
+    },
+    "UI.MainForm2.Config.WindowsPathDialogTitle": {
+      "Source": "MKVToolNix Path",
+      "Translation": "MKVToolNix Path",
+      "IsTranslated": true,
+      "Notes": "Dialog title for choosing the Windows MKVToolNix directory"
+    },
+    "UI.MainForm2.Config.WindowsToolsTitle": {
+      "Source": "MKVToolNix",
+      "Translation": "MKVToolNix",
+      "IsTranslated": true,
+      "Notes": "Dialog title for Windows MKVToolNix warnings"
     },
     "UI.MainForm2.Config.AutoDetect": {
       "Source": "Auto Detect",
@@ -1305,6 +1353,30 @@
       "Translation": "{0}{1}Please download and reinstall or provide a manual path!",
       "IsTranslated": true,
       "Notes": "Auto-detection error followed by guidance to reinstall or choose a manual path"
+    },
+    "UI.MainForm2.Errors.MkvCommandsNotFound": {
+      "Source": "Could not find mkvmerge, mkvinfo, and mkvextract. Install them on PATH or choose the mkvmerge executable.",
+      "Translation": "Could not find mkvmerge, mkvinfo, and mkvextract. Install them on PATH or choose the mkvmerge executable.",
+      "IsTranslated": true,
+      "Notes": "Linux validation error when required MKV command-line tools cannot be resolved"
+    },
+    "UI.MainForm2.Errors.MkvToolNixDirectoryNotFound": {
+      "Source": "Select a valid MKVToolNix directory first.",
+      "Translation": "Select a valid MKVToolNix directory first.",
+      "IsTranslated": true,
+      "Notes": "Windows validation error when the selected MKVToolNix directory is invalid"
+    },
+    "UI.MainForm2.Status.MkvCommandsDetected": {
+      "Source": "MKV command tools detected",
+      "Translation": "MKV command tools detected",
+      "IsTranslated": true,
+      "Notes": "Status bar message after Linux MKV command tools are detected"
+    },
+    "UI.MainForm2.Status.MkvToolNixDetected": {
+      "Source": "MKVToolNix detected",
+      "Translation": "MKVToolNix detected",
+      "IsTranslated": true,
+      "Notes": "Status bar message after Windows MKVToolNix directory is detected"
     },
     "UI.MainForm2.Errors.MkvmergeNotFoundInPath": {
       "Source": "mkvmerge was not found in path {0}!",

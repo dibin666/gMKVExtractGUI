@@ -1,13 +1,15 @@
 # C++/Qt Build And Package Notes
 
 The C++ rewrite builds side-by-side with the existing C# application. It does
-not embed MKVToolNix; users still need `mkvmerge`, `mkvinfo`, and `mkvextract`
-installed and selectable from the app.
+not embed the Matroska command-line tools. On Linux, users need `mkvmerge`,
+`mkvinfo`, and `mkvextract` available on `PATH` or can choose the `mkvmerge`
+executable manually. On Windows, users still need MKVToolNix installed so the
+app can detect its installation directory and run the three `.exe` tools.
 
 Before calling the rewrite feature-complete, record Linux and Windows evidence
 in [CPP_MANUAL_PARITY_CHECKLIST.md](CPP_MANUAL_PARITY_CHECKLIST.md). On Linux,
 `scripts/cpp_manual_smoke.sh` can generate a tiny MKV fixture and verify the
-local C++ build plus MKVToolNix command-line tools when MKVToolNix is installed.
+local C++ build plus direct `mkvmerge`, `mkvinfo`, and `mkvextract` invocation.
 
 ## Linux Debug Build
 
@@ -16,7 +18,8 @@ Prerequisites:
 - CMake 3.21 or newer
 - A C++17 compiler
 - Qt 6.2 or newer with Core, Widgets, and Test modules
-- MKVToolNix installed separately for runtime extraction
+- `mkvmerge`, `mkvinfo`, and `mkvextract` installed separately for runtime
+  analysis/extraction, normally through the distro's MKVToolNix package
 
 ```bash
 cmake -S . -B build/cpp -DCMAKE_BUILD_TYPE=Debug
@@ -37,7 +40,7 @@ Prerequisites:
 - Visual Studio 2022 with C++ desktop tools
 - CMake 3.21 or newer
 - Qt 6.2 or newer for MSVC
-- MKVToolNix installed separately for runtime extraction
+- MKVToolNix installed separately for runtime analysis/extraction
 
 ```powershell
 cmake -S . -B build\cpp -G "Visual Studio 17 2022" -A x64

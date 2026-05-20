@@ -44,6 +44,57 @@ QString firstValidToolDirectory(const QStringList& candidates)
     return {};
 }
 
+QString existingToolInDirectory(const QString& directory, MkvTool tool)
+{
+    const QFileInfo executable(MkvToolNix::executablePath(directory, tool));
+    return executable.exists() && executable.isFile()
+        ? executable.absoluteFilePath()
+        : QString();
+}
+
+bool isPathLike(const QString& value)
+{
+    return value.contains(QLatin1Char('/')) || value.contains(QLatin1Char('\\'));
+}
+
+MkvToolPaths linuxToolsFromLocation(const QString& location, const QStringList& searchDirectories)
+{
+    const QString trimmed = location.trimmed();
+    if (trimmed.isEmpty()) {
+        return MkvToolNix::toolPathsFromPath(searchDirectories);
+    }
+
+    const QFileInfo info(trimmed);
+    if (info.exists() && info.isDir()) {
+        const MkvToolPaths tools = MkvToolNix::toolPathsFromDirectory(info.absoluteFilePath());
+        return tools.isValid() ? tools : MkvToolPaths();
+    }
+
+    if (info.exists() && info.isFile()) {
+        if (info.fileName().compare(MkvToolNix::executableName(MkvTool::Merge), Qt::CaseInsensitive) != 0) {
+            return {};
+        }
+
+        MkvToolPaths tools = MkvToolNix::toolPathsFromDirectory(info.absolutePath());
+        tools.mkvmergePath = info.absoluteFilePath();
+        return tools.isValid() ? tools : MkvToolPaths();
+    }
+
+    if (!isPathLike(trimmed)) {
+        const QString executable = QStandardPaths::findExecutable(trimmed, searchDirectories);
+        if (!executable.isEmpty()) {
+            const QFileInfo executableInfo(executable);
+            if (executableInfo.fileName().compare(MkvToolNix::executableName(MkvTool::Merge), Qt::CaseInsensitive) == 0) {
+                MkvToolPaths tools = MkvToolNix::toolPathsFromDirectory(executableInfo.absolutePath());
+                tools.mkvmergePath = executableInfo.absoluteFilePath();
+                return tools.isValid() ? tools : MkvToolPaths();
+            }
+        }
+    }
+
+    return {};
+}
+
 QString trimWindowsExecutableValue(QString value)
 {
     value = value.trimmed();
@@ -144,6 +195,50 @@ QStringList windowsRegistryToolDirectories()
 
 }
 
+bool MkvToolPaths::isValid() const
+{
+    return QFileInfo(mkvmergePath).isFile()
+        && QFileInfo(mkvinfoPath).isFile()
+        && QFileInfo(mkvextractPath).isFile();
+}
+
+QString MkvToolPaths::path(MkvTool tool) const
+{
+    switch (tool) {
+    case MkvTool::Merge:
+    case MkvTool::MergeNewGui:
+        return mkvmergePath;
+    case MkvTool::MergeGui:
+        return {};
+    case MkvTool::Info:
+        return mkvinfoPath;
+    case MkvTool::Extract:
+        return mkvextractPath;
+    }
+
+    return {};
+}
+
+QString MkvToolPaths::displayLocation() const
+{
+    if (!isValid()) {
+        return {};
+    }
+
+    const QFileInfo mergeInfo(mkvmergePath);
+    if (Platform::isLinux()) {
+        return mergeInfo.absoluteFilePath();
+    }
+
+    const QString mergeDirectory = mergeInfo.absolutePath();
+    if (QFileInfo(mkvinfoPath).absolutePath().compare(mergeDirectory, Qt::CaseInsensitive) == 0
+        && QFileInfo(mkvextractPath).absolutePath().compare(mergeDirectory, Qt::CaseInsensitive) == 0) {
+        return mergeDirectory;
+    }
+
+    return mergeInfo.absoluteFilePath();
+}
+
 bool ProcessResult::hasProcessError() const
 {
     return !errorString.isEmpty();
@@ -192,6 +287,38 @@ bool MkvToolNix::isToolDirectory(const QString& directory)
         && hasExecutable(directory, MkvTool::Extract);
 }
 
+MkvToolPaths MkvToolNix::toolPathsFromDirectory(const QString& directory)
+{
+    if (directory.trimmed().isEmpty() || !QDir(directory).exists()) {
+        return {};
+    }
+
+    return {
+        existingToolInDirectory(directory, MkvTool::Merge),
+        existingToolInDirectory(directory, MkvTool::Info),
+        existingToolInDirectory(directory, MkvTool::Extract),
+    };
+}
+
+MkvToolPaths MkvToolNix::toolPathsFromPath(const QStringList& searchDirectories)
+{
+    return {
+        QStandardPaths::findExecutable(executableName(MkvTool::Merge), searchDirectories),
+        QStandardPaths::findExecutable(executableName(MkvTool::Info), searchDirectories),
+        QStandardPaths::findExecutable(executableName(MkvTool::Extract), searchDirectories),
+    };
+}
+
+MkvToolPaths MkvToolNix::toolPathsFromLocation(const QString& location, const QStringList& searchDirectories)
+{
+    if (Platform::isLinux()) {
+        return linuxToolsFromLocation(location, searchDirectories);
+    }
+
+    const MkvToolPaths directoryTools = toolPathsFromDirectory(location);
+    return directoryTools.isValid() ? directoryTools : MkvToolPaths();
+}
+
 QString MkvToolNix::uiLanguageCode()
 {
     return Platform::isLinux() ? QStringLiteral("en_US") : QStringLiteral("en");
@@ -223,6 +350,42 @@ QString MkvToolNix::unescapeString(QString value)
 
 QString ToolLocator::locate(const ToolLocatorInputs& inputs)
 {
+    return locateTools(inputs).displayLocation();
+}
+
+MkvToolPaths ToolLocator::locateTools(const ToolLocatorInputs& inputs)
+{
+    if (Platform::isLinux()) {
+        for (const QString& candidate : { inputs.explicitPath, inputs.savedPath, inputs.applicationPath }) {
+            if (candidate.trimmed().isEmpty()) {
+                continue;
+            }
+            const MkvToolPaths tools = MkvToolNix::toolPathsFromLocation(candidate, inputs.searchDirectories);
+            if (tools.isValid()) {
+                Logger::log(QStringLiteral("Found MKV tools: %1").arg(tools.displayLocation()));
+                return tools;
+            }
+        }
+
+        if (inputs.searchPath) {
+            const MkvToolPaths pathTools = MkvToolNix::toolPathsFromPath(inputs.searchDirectories);
+            if (pathTools.isValid()) {
+                Logger::log(QStringLiteral("Found MKV tools in PATH: %1").arg(pathTools.displayLocation()));
+                return pathTools;
+            }
+        }
+
+        if (!inputs.linuxDefaultPath.trimmed().isEmpty()) {
+            const MkvToolPaths linuxDefaultTools = MkvToolNix::toolPathsFromLocation(inputs.linuxDefaultPath, inputs.searchDirectories);
+            if (linuxDefaultTools.isValid()) {
+                Logger::log(QStringLiteral("Found MKV tools: %1").arg(linuxDefaultTools.displayLocation()));
+                return linuxDefaultTools;
+            }
+        }
+
+        return {};
+    }
+
     const QString directMatch = firstValidToolDirectory({
         inputs.explicitPath,
         inputs.savedPath,
@@ -230,30 +393,22 @@ QString ToolLocator::locate(const ToolLocatorInputs& inputs)
     });
     if (!directMatch.isEmpty()) {
         Logger::log(QStringLiteral("Found MKVToolNix in: %1").arg(directMatch));
-        return directMatch;
+        return MkvToolNix::toolPathsFromDirectory(directMatch);
     }
 
     const QString registryMatch = firstValidToolDirectory(windowsRegistryToolDirectories());
     if (!registryMatch.isEmpty()) {
         Logger::log(QStringLiteral("Found MKVToolNix in Windows registry: %1").arg(registryMatch));
-        return registryMatch;
-    }
-
-    if (Platform::isLinux()) {
-        const QString linuxDefaultMatch = firstValidToolDirectory({ inputs.linuxDefaultPath });
-        if (!linuxDefaultMatch.isEmpty()) {
-            Logger::log(QStringLiteral("Found MKVToolNix in: %1").arg(linuxDefaultMatch));
-            return linuxDefaultMatch;
-        }
+        return MkvToolNix::toolPathsFromDirectory(registryMatch);
     }
 
     if (inputs.searchPath) {
-        const QString mkvmergePath = QStandardPaths::findExecutable(MkvToolNix::executableName(MkvTool::Merge));
+        const QString mkvmergePath = QStandardPaths::findExecutable(MkvToolNix::executableName(MkvTool::Merge), inputs.searchDirectories);
         if (!mkvmergePath.isEmpty()) {
             const QString pathDirectory = QFileInfo(mkvmergePath).absolutePath();
             if (MkvToolNix::isToolDirectory(pathDirectory)) {
                 Logger::log(QStringLiteral("Found MKVToolNix in PATH: %1").arg(pathDirectory));
-                return pathDirectory;
+                return MkvToolNix::toolPathsFromDirectory(pathDirectory);
             }
         }
     }
@@ -291,9 +446,14 @@ ProcessResult ProcessRunner::run(const QString& program, const QStringList& argu
 
 Version MkvToolVersionService::readVersion(const QString& toolDirectory, MkvTool tool)
 {
-    const QString program = MkvToolNix::executablePath(toolDirectory, tool);
-    if (!QFileInfo::exists(program)) {
-        throw std::runtime_error(QStringLiteral("Could not find %1").arg(program).toStdString());
+    return readVersion(MkvToolNix::toolPathsFromLocation(toolDirectory), tool);
+}
+
+Version MkvToolVersionService::readVersion(const MkvToolPaths& toolPaths, MkvTool tool)
+{
+    const QString program = toolPaths.path(tool);
+    if (!toolPaths.isValid() || !QFileInfo::exists(program)) {
+        throw std::runtime_error(QStringLiteral("Could not find %1").arg(MkvToolNix::executableName(tool)).toStdString());
     }
 
     const ProcessResult result = ProcessRunner::run(

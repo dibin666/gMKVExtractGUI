@@ -9,10 +9,13 @@ If you are editing or creating locale files, see the dedicated [Translator Guide
 ## Main Window (gMKVExtractGUI)
 
 ### Configuration Section
-- **MKVToolNix Path:**
-  - Text box to specify the path to the MKVToolNix tools.
-  - **Browse...** button: Opens a folder dialog to select the MKVToolNix directory.
-  - **Auto Detect** button: Attempts to automatically find the MKVToolNix installation.
+- **MKV tools / MKVToolNix Path:**
+  - On Linux, the app uses `mkvmerge`, `mkvinfo`, and `mkvextract` directly.
+    Leave the field empty to use tools from `PATH`, click **Auto Detect**, or
+    use **Browse...** to choose the `mkvmerge` executable.
+  - On Windows, the field is the MKVToolNix installation directory.
+    **Browse...** opens a folder dialog, and **Auto Detect** checks the saved
+    setting, application directory, Windows registry, and `PATH`.
 
 ### Input Section
 - **Input Files:**

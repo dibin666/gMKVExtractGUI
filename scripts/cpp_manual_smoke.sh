@@ -41,7 +41,7 @@ require_tool mkvmerge
 require_tool mkvinfo
 require_tool mkvextract
 
-mkvtoolnix_dir="$(dirname "$(command -v mkvmerge)")"
+mkvmerge_path="$(command -v mkvmerge)"
 
 cmake -S "${repo_root}" -B "${build_dir}" -DCMAKE_BUILD_TYPE=Debug
 cmake --build "${build_dir}"
@@ -217,7 +217,7 @@ if ! mkvextract "${sample_file}" cuesheet "${extract_dir}/sample.cue" 2> "${work
 else
     require_nonempty_file "${extract_dir}/sample.cue"
 fi
-"${build_dir}/src/gMKVExtractGUI.Cpp/gMKVExtractGUIQt" --analyze-smoke-test "${mkvtoolnix_dir}" "${sample_file}"
+"${build_dir}/src/gMKVExtractGUI.Cpp/gMKVExtractGUIQt" --analyze-smoke-test "${mkvmerge_path}" "${sample_file}"
 "${build_dir}/src/gMKVExtractGUI.Cpp/gMKVExtractGUIQt" --smoke-test
 
 echo "Manual smoke artifacts written to ${work_dir}"

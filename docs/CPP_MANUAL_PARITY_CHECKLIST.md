@@ -10,8 +10,10 @@ was explicitly skipped for the 2026-05-20 implementation pass by user request.
 - Qt 6.2 or newer.
 - CMake 3.21 or newer.
 - A C++17 compiler.
-- MKVToolNix installed and available as `mkvmerge`, `mkvinfo`, and
-  `mkvextract`.
+- On Linux, `mkvmerge`, `mkvinfo`, and `mkvextract` installed and available on
+  `PATH`.
+- On Windows, MKVToolNix installed so the app can detect the installation
+  directory and run `mkvmerge.exe`, `mkvinfo.exe`, and `mkvextract.exe`.
 - At least one representative Matroska/WebM file, preferably with video, audio,
   subtitle, chapters, attachments, tags, and non-English language metadata.
 
@@ -32,7 +34,7 @@ generated `build/cpp-manual-smoke/sample.mkv` with video, audio, SRT subtitles,
 chapters, global tags, and an attachment. It identified the file with
 `mkvmerge -J`, captured `mkvinfo` output, extracted tracks, timestamps, cues,
 chapters, tags, attachments, and a CUE sheet with `mkvextract`, and ran
-`gMKVExtractGUIQt --analyze-smoke-test <mkvtoolnix-dir> sample.mkv` to verify
+`gMKVExtractGUIQt --analyze-smoke-test <mkvmerge-path> sample.mkv` to verify
 the C++ analyzer sees video, audio, subtitles, chapters, and attachments. It
 also ran `gMKVExtractGUIQt --smoke-test`. The Qt smoke path constructs and shows
 the Main, Options, Log, Job Manager, and Translation Editor windows in offscreen
@@ -43,7 +45,8 @@ mode, then asserts representative controls exist in each window.
 | Check | Expected Result | Evidence |
 | --- | --- | --- |
 | Launch without .NET/Mono | Qt app opens directly | |
-| MKVToolNix path Browse and Auto Detect | Valid folder is accepted; invalid folder is rejected | |
+| Linux MKV tools Browse and Auto Detect | `mkvmerge` executable or PATH tools are accepted; missing commands are rejected | |
+| Windows MKVToolNix path Browse and Auto Detect | Valid MKVToolNix folder is accepted; invalid folder is rejected | |
 | Drag/drop file | File appears in input tree and selected-file info updates | |
 | Drag/drop directory | Supported files are discovered recursively | |
 | Append on drag/drop | Enabled appends, disabled replaces | |

@@ -56,6 +56,8 @@ private slots:
     void mkvToolNixShouldExposePlatformExecutableNamesAndLanguage();
     void mkvToolNixShouldValidateToolDirectory();
     void toolLocatorShouldPreferExplicitAndSavedPaths();
+    void toolLocatorShouldFindLinuxToolsOnConfiguredPath();
+    void toolLocatorShouldUseLinuxMkvmergeFileAsDisplayLocation();
     void processRunnerShouldCaptureStdoutAndExitCode();
     void mkvInfoParserShouldParseTextOutput();
     void mkvInfoParserShouldCalculateDelaysFromCheckOutput();
@@ -67,6 +69,33 @@ private slots:
 private:
     void writeTranslationFile(const QString& directory, const QString& culture, const QMap<QString, QString>& entries);
 };
+
+void writeFakeTool(const QString& directory, gmkv::MkvTool tool)
+{
+    QFile file(gmkv::MkvToolNix::executablePath(directory, tool));
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    file.write("echo tool\n");
+    file.close();
+    const bool permissionsSet = QFile::setPermissions(
+        file.fileName(),
+        QFileDevice::ReadOwner
+            | QFileDevice::WriteOwner
+            | QFileDevice::ExeOwner
+            | QFileDevice::ReadGroup
+            | QFileDevice::ExeGroup
+            | QFileDevice::ReadOther
+            | QFileDevice::ExeOther);
+    if (gmkv::Platform::isLinux()) {
+        QVERIFY(permissionsSet);
+    }
+}
+
+void writeFakeToolSet(const QString& directory)
+{
+    for (const gmkv::MkvTool tool : { gmkv::MkvTool::Merge, gmkv::MkvTool::Info, gmkv::MkvTool::Extract }) {
+        writeFakeTool(directory, tool);
+    }
+}
 
 void CoreTests::versionOutputShouldBeParsedSuccessfully()
 {
@@ -840,11 +869,7 @@ void CoreTests::toolLocatorShouldPreferExplicitAndSavedPaths()
     QVERIFY(explicitDir.isValid());
     QVERIFY(savedDir.isValid());
 
-    for (const gmkv::MkvTool tool : { gmkv::MkvTool::Merge, gmkv::MkvTool::Info, gmkv::MkvTool::Extract }) {
-        QFile file(gmkv::MkvToolNix::executablePath(savedDir.path(), tool));
-        QVERIFY(file.open(QIODevice::WriteOnly));
-        file.close();
-    }
+    writeFakeToolSet(savedDir.path());
 
     gmkv::ToolLocatorInputs inputs;
     inputs.explicitPath = explicitDir.path();
@@ -853,15 +878,63 @@ void CoreTests::toolLocatorShouldPreferExplicitAndSavedPaths()
     inputs.linuxDefaultPath = QString();
     inputs.searchPath = false;
 
-    QCOMPARE(gmkv::ToolLocator::locate(inputs), QDir(savedDir.path()).absolutePath());
+    const QString expectedSavedLocation = gmkv::Platform::isLinux()
+        ? QFileInfo(gmkv::MkvToolNix::executablePath(savedDir.path(), gmkv::MkvTool::Merge)).absoluteFilePath()
+        : QDir(savedDir.path()).absolutePath();
+    QCOMPARE(gmkv::ToolLocator::locate(inputs), expectedSavedLocation);
 
-    for (const gmkv::MkvTool tool : { gmkv::MkvTool::Merge, gmkv::MkvTool::Info, gmkv::MkvTool::Extract }) {
-        QFile file(gmkv::MkvToolNix::executablePath(explicitDir.path(), tool));
-        QVERIFY(file.open(QIODevice::WriteOnly));
-        file.close();
+    writeFakeToolSet(explicitDir.path());
+
+    const QString expectedExplicitLocation = gmkv::Platform::isLinux()
+        ? QFileInfo(gmkv::MkvToolNix::executablePath(explicitDir.path(), gmkv::MkvTool::Merge)).absoluteFilePath()
+        : QDir(explicitDir.path()).absolutePath();
+    QCOMPARE(gmkv::ToolLocator::locate(inputs), expectedExplicitLocation);
+}
+
+void CoreTests::toolLocatorShouldFindLinuxToolsOnConfiguredPath()
+{
+    if (!gmkv::Platform::isLinux()) {
+        QSKIP("Linux direct executable lookup is Linux-only.");
     }
 
-    QCOMPARE(gmkv::ToolLocator::locate(inputs), QDir(explicitDir.path()).absolutePath());
+    QTemporaryDir toolDir;
+    QVERIFY(toolDir.isValid());
+    writeFakeToolSet(toolDir.path());
+
+    gmkv::ToolLocatorInputs inputs;
+    inputs.explicitPath = QString();
+    inputs.savedPath = QString();
+    inputs.applicationPath = QString();
+    inputs.linuxDefaultPath = QString();
+    inputs.searchDirectories = { toolDir.path() };
+
+    const gmkv::MkvToolPaths tools = gmkv::ToolLocator::locateTools(inputs);
+    QVERIFY(tools.isValid());
+    QCOMPARE(tools.path(gmkv::MkvTool::Merge), QFileInfo(gmkv::MkvToolNix::executablePath(toolDir.path(), gmkv::MkvTool::Merge)).absoluteFilePath());
+    QCOMPARE(tools.path(gmkv::MkvTool::Info), QFileInfo(gmkv::MkvToolNix::executablePath(toolDir.path(), gmkv::MkvTool::Info)).absoluteFilePath());
+    QCOMPARE(tools.path(gmkv::MkvTool::Extract), QFileInfo(gmkv::MkvToolNix::executablePath(toolDir.path(), gmkv::MkvTool::Extract)).absoluteFilePath());
+    QCOMPARE(gmkv::ToolLocator::locate(inputs), tools.path(gmkv::MkvTool::Merge));
+}
+
+void CoreTests::toolLocatorShouldUseLinuxMkvmergeFileAsDisplayLocation()
+{
+    if (!gmkv::Platform::isLinux()) {
+        QSKIP("Linux direct executable lookup is Linux-only.");
+    }
+
+    QTemporaryDir toolDir;
+    QVERIFY(toolDir.isValid());
+    writeFakeToolSet(toolDir.path());
+
+    gmkv::ToolLocatorInputs inputs;
+    inputs.explicitPath = gmkv::MkvToolNix::executablePath(toolDir.path(), gmkv::MkvTool::Merge);
+    inputs.savedPath = QString();
+    inputs.applicationPath = QString();
+    inputs.linuxDefaultPath = QString();
+    inputs.searchPath = false;
+
+    const QString expectedLocation = QFileInfo(inputs.explicitPath).absoluteFilePath();
+    QCOMPARE(gmkv::ToolLocator::locate(inputs), expectedLocation);
 }
 
 void CoreTests::processRunnerShouldCaptureStdoutAndExitCode()

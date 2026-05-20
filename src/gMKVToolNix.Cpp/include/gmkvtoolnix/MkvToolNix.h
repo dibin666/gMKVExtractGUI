@@ -17,6 +17,17 @@ enum class MkvTool
     MergeNewGui,
 };
 
+struct MkvToolPaths
+{
+    QString mkvmergePath;
+    QString mkvinfoPath;
+    QString mkvextractPath;
+
+    bool isValid() const;
+    QString path(MkvTool tool) const;
+    QString displayLocation() const;
+};
+
 struct ProcessResult
 {
     int exitCode = -1;
@@ -40,6 +51,9 @@ public:
     static QString executablePath(const QString& directory, MkvTool tool);
     static bool hasExecutable(const QString& directory, MkvTool tool);
     static bool isToolDirectory(const QString& directory);
+    static MkvToolPaths toolPathsFromDirectory(const QString& directory);
+    static MkvToolPaths toolPathsFromPath(const QStringList& searchDirectories = {});
+    static MkvToolPaths toolPathsFromLocation(const QString& location, const QStringList& searchDirectories = {});
     static QString uiLanguageCode();
     static QString escapeString(QString value);
     static QString unescapeString(QString value);
@@ -51,6 +65,7 @@ struct ToolLocatorInputs
     QString savedPath;
     QString applicationPath;
     QString linuxDefaultPath = QStringLiteral("/usr/bin");
+    QStringList searchDirectories;
     bool searchPath = true;
 };
 
@@ -58,6 +73,7 @@ class ToolLocator
 {
 public:
     static QString locate(const ToolLocatorInputs& inputs);
+    static MkvToolPaths locateTools(const ToolLocatorInputs& inputs);
 };
 
 class ProcessRunner
@@ -70,6 +86,7 @@ class MkvToolVersionService
 {
 public:
     static Version readVersion(const QString& toolDirectory, MkvTool tool);
+    static Version readVersion(const MkvToolPaths& toolPaths, MkvTool tool);
 };
 
 }

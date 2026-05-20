@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gmkvtoolnix/MkvToolNix.h"
 #include "gmkvtoolnix/Segments.h"
 
 #include <QList>
@@ -25,6 +26,7 @@ class SegmentAnalyzer
 {
 public:
     static QList<SegmentPtr> analyzeFile(const QString& mkvToolNixDirectory, const QString& inputFile);
+    static QList<SegmentPtr> analyzeFile(const MkvToolPaths& toolPaths, const QString& inputFile);
 };
 
 }

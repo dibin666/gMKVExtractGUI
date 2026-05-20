@@ -122,7 +122,14 @@ gmkv::MkvExtractRunResult ExtractionController::runJobInWorker(const gmkv::Job& 
 {
     gmkv::MkvExtractRunResult result;
     try {
-        const gmkv::Version version = gmkv::MkvToolVersionService::readVersion(job.mkvToolNixPath, gmkv::MkvTool::Extract);
+        const gmkv::MkvToolPaths toolPaths = gmkv::MkvToolNix::toolPathsFromLocation(job.mkvToolNixPath);
+        if (!toolPaths.isValid()) {
+            result.errorString = QStringLiteral("Could not find mkvmerge, mkvinfo, and mkvextract.");
+            result.errors.append(result.errorString);
+            return result;
+        }
+
+        const gmkv::Version version = gmkv::MkvToolVersionService::readVersion(toolPaths, gmkv::MkvTool::Extract);
         const QList<gmkv::PlannedExtractCommand> commands = planCommandsForJob(job, version);
         if (commands.isEmpty()) {
             result.errorString = QStringLiteral("No extractable commands were generated for %1.").arg(QFileInfo(job.parameters.mkvFile).fileName());
@@ -130,7 +137,7 @@ gmkv::MkvExtractRunResult ExtractionController::runJobInWorker(const gmkv::Job& 
             return result;
         }
 
-        gmkv::MkvExtractRunner runner(gmkv::MkvToolNix::executablePath(job.mkvToolNixPath, gmkv::MkvTool::Extract));
+        gmkv::MkvExtractRunner runner(toolPaths.path(gmkv::MkvTool::Extract));
         setActiveRunner(&runner);
         const auto clearActiveRunner = qScopeGuard([this]() {
             setActiveRunner(nullptr);

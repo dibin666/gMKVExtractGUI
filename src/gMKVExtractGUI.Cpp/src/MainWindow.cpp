@@ -66,6 +66,41 @@ std::runtime_error runtimeError(const QString& message)
     return std::runtime_error(message.toUtf8().constData());
 }
 
+QString toolLocationLabelKey()
+{
+    return gmkv::Platform::isLinux()
+        ? QStringLiteral("UI.MainForm2.Config.LinuxToolsLabel")
+        : QStringLiteral("UI.MainForm2.Config.WindowsPathLabel");
+}
+
+QString toolLocationPlaceholderKey()
+{
+    return gmkv::Platform::isLinux()
+        ? QStringLiteral("UI.MainForm2.Config.LinuxToolsPlaceholder")
+        : QStringLiteral("UI.MainForm2.Config.WindowsPathPlaceholder");
+}
+
+QString toolDialogTitle()
+{
+    return gmkv::Platform::isLinux()
+        ? loc(QStringLiteral("UI.MainForm2.Config.LinuxToolsDialogTitle"))
+        : loc(QStringLiteral("UI.MainForm2.Config.WindowsPathDialogTitle"));
+}
+
+QString toolMessageTitle()
+{
+    return gmkv::Platform::isLinux()
+        ? loc(QStringLiteral("UI.MainForm2.Config.LinuxToolsTitle"))
+        : loc(QStringLiteral("UI.MainForm2.Config.WindowsToolsTitle"));
+}
+
+QString missingToolsMessage()
+{
+    return gmkv::Platform::isLinux()
+        ? loc(QStringLiteral("UI.MainForm2.Errors.MkvCommandsNotFound"))
+        : loc(QStringLiteral("UI.MainForm2.Errors.MkvToolNixDirectoryNotFound"));
+}
+
 bool isChecked(const QTreeWidgetItem* item)
 {
     return item != nullptr && item->checkState(0) == Qt::Checked;
@@ -226,8 +261,15 @@ void MainWindow::buildUi()
     setTextKey(configGroup, QStringLiteral("UI.MainForm2.Config.Group"));
     auto* configLayout = new QHBoxLayout(configGroup);
     m_mkvToolNixPathEdit = new QLineEdit(configGroup);
-    m_mkvToolNixPathEdit->setPlaceholderText(QStringLiteral("MKVToolNix path"));
-    configLayout->addWidget(new QLabel(QStringLiteral("MKVToolNix Path:"), configGroup));
+    m_mkvToolNixPathEdit->setPlaceholderText(gmkv::Platform::isLinux()
+            ? QStringLiteral("Auto-detect from PATH or choose mkvmerge")
+            : QStringLiteral("MKVToolNix path"));
+    setPlaceholderKey(m_mkvToolNixPathEdit, toolLocationPlaceholderKey());
+    auto* toolLocationLabel = new QLabel(gmkv::Platform::isLinux()
+            ? QStringLiteral("MKV tools:")
+            : QStringLiteral("MKVToolNix Path:"), configGroup);
+    setTextKey(toolLocationLabel, toolLocationLabelKey());
+    configLayout->addWidget(toolLocationLabel);
     configLayout->addWidget(m_mkvToolNixPathEdit, 1);
     auto* browseToolsButton = new QPushButton(QStringLiteral("Browse..."), configGroup);
     setTextKey(browseToolsButton, QStringLiteral("UI.MainForm2.Config.Browse"));
@@ -521,7 +563,20 @@ void MainWindow::showOptionsDialog()
 
 void MainWindow::browseMkvToolNixPath()
 {
-    const QString directory = QFileDialog::getExistingDirectory(this, QStringLiteral("MKVToolNix Path"), m_mkvToolNixPathEdit->text());
+    if (gmkv::Platform::isLinux()) {
+        const QString filename = QFileDialog::getOpenFileName(
+            this,
+            toolDialogTitle(),
+            m_mkvToolNixPathEdit->text(),
+            QStringLiteral("mkvmerge (mkvmerge);;All Files (*)"));
+        if (!filename.isEmpty()) {
+            m_mkvToolNixPathEdit->setText(QFileInfo(filename).absoluteFilePath());
+            saveMainSettings();
+        }
+        return;
+    }
+
+    const QString directory = QFileDialog::getExistingDirectory(this, toolDialogTitle(), m_mkvToolNixPathEdit->text());
     if (!directory.isEmpty()) {
         m_mkvToolNixPathEdit->setText(QDir(directory).absolutePath());
         saveMainSettings();
@@ -535,13 +590,16 @@ void MainWindow::autoDetectMkvToolNixPath()
     inputs.applicationPath = QCoreApplication::applicationDirPath();
     const QString detected = gmkv::ToolLocator::locate(inputs);
     if (detected.isEmpty()) {
-        QMessageBox::warning(this, QStringLiteral("MKVToolNix"), QStringLiteral("MKVToolNix was not found."));
+        QMessageBox::warning(this, toolMessageTitle(), missingToolsMessage());
         return;
     }
 
     m_mkvToolNixPathEdit->setText(detected);
     saveMainSettings();
-    statusBar()->showMessage(QStringLiteral("MKVToolNix detected"), 4000);
+    statusBar()->showMessage(gmkv::Platform::isLinux()
+            ? loc(QStringLiteral("UI.MainForm2.Status.MkvCommandsDetected"))
+            : loc(QStringLiteral("UI.MainForm2.Status.MkvToolNixDetected")),
+        4000);
 }
 
 void MainWindow::browseOutputDirectory()
@@ -677,9 +735,10 @@ void MainWindow::addInputFiles(const QStringList& filenames, bool append)
         return;
     }
 
-    const QString toolPath = m_mkvToolNixPathEdit->text().trimmed();
-    if (!gmkv::MkvToolNix::isToolDirectory(toolPath)) {
-        QMessageBox::warning(this, QStringLiteral("MKVToolNix"), QStringLiteral("Select a valid MKVToolNix path first."));
+    const QString toolLocation = m_mkvToolNixPathEdit->text().trimmed();
+    const gmkv::MkvToolPaths toolPaths = gmkv::MkvToolNix::toolPathsFromLocation(toolLocation);
+    if (!toolPaths.isValid()) {
+        QMessageBox::warning(this, toolMessageTitle(), missingToolsMessage());
         return;
     }
 
@@ -712,13 +771,13 @@ void MainWindow::addInputFiles(const QStringList& filenames, bool append)
 
     m_currentProgress->setValue(0);
     statusBar()->showMessage(QStringLiteral("Analyzing input files"));
-    m_analysisThread = QThread::create([this, toolPath, filesToAnalyze]() {
+    m_analysisThread = QThread::create([this, toolPaths, filesToAnalyze]() {
         QList<AnalyzedFile> results;
         for (qsizetype index = 0; index < filesToAnalyze.size(); ++index) {
             AnalyzedFile result;
             result.filename = filesToAnalyze[index];
             try {
-                result.segments = gmkv::SegmentAnalyzer::analyzeFile(toolPath, result.filename);
+                result.segments = gmkv::SegmentAnalyzer::analyzeFile(toolPaths, result.filename);
             } catch (const std::exception& ex) {
                 result.error = QString::fromUtf8(ex.what());
             }
@@ -1330,9 +1389,9 @@ QList<gmkv::Job> MainWindow::createJobsFromSelection()
 {
     saveMainSettings();
 
-    const QString toolPath = m_mkvToolNixPathEdit->text().trimmed();
-    if (!gmkv::MkvToolNix::isToolDirectory(toolPath)) {
-        throw runtimeError(QStringLiteral("Select a valid MKVToolNix path first."));
+    const QString toolLocation = m_mkvToolNixPathEdit->text().trimmed();
+    if (!gmkv::MkvToolNix::toolPathsFromLocation(toolLocation).isValid()) {
+        throw runtimeError(missingToolsMessage());
     }
 
     if (m_loadedFiles.isEmpty()) {

@@ -104,7 +104,7 @@ int runSmokeTest(gmkv::gui::MainWindow& mainWindow)
     return structureOk ? 0 : 5;
 }
 
-int runAnalysisSmokeTest(const QString& mkvToolNixDirectory, const QString& inputFile)
+int runAnalysisSmokeTest(const QString& toolLocation, const QString& inputFile)
 {
     if (!QFileInfo::exists(inputFile)) {
         return 2;
@@ -112,7 +112,7 @@ int runAnalysisSmokeTest(const QString& mkvToolNixDirectory, const QString& inpu
 
     QList<gmkv::SegmentPtr> segments;
     try {
-        segments = gmkv::SegmentAnalyzer::analyzeFile(mkvToolNixDirectory, inputFile);
+        segments = gmkv::SegmentAnalyzer::analyzeFile(toolLocation, inputFile);
     } catch (...) {
         return 4;
     }
