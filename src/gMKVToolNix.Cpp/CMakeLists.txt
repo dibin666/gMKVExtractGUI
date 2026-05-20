@@ -1,0 +1,40 @@
+add_library(gMKVToolNixCpp STATIC
+    include/gmkvtoolnix/FileName.h
+    include/gmkvtoolnix/ExtractionNaming.h
+    include/gmkvtoolnix/FilenamePatterns.h
+    include/gmkvtoolnix/Jobs.h
+    include/gmkvtoolnix/Localization.h
+    include/gmkvtoolnix/Log.h
+    include/gmkvtoolnix/MkvExtract.h
+    include/gmkvtoolnix/MkvInfo.h
+    include/gmkvtoolnix/MkvMerge.h
+    include/gmkvtoolnix/MkvToolNix.h
+    include/gmkvtoolnix/OptionValue.h
+    include/gmkvtoolnix/Segments.h
+    include/gmkvtoolnix/Settings.h
+    include/gmkvtoolnix/Version.h
+    src/FileName.cpp
+    src/ExtractionNaming.cpp
+    src/FilenamePatterns.cpp
+    src/Jobs.cpp
+    src/Localization.cpp
+    src/Log.cpp
+    src/MkvExtract.cpp
+    src/MkvInfo.cpp
+    src/MkvMerge.cpp
+    src/MkvToolNix.cpp
+    src/OptionValue.cpp
+    src/Segments.cpp
+    src/Settings.cpp
+    src/Version.cpp
+)
+
+target_include_directories(gMKVToolNixCpp
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(gMKVToolNixCpp
+    PUBLIC
+        Qt6::Core
+)

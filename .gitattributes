@@ -2,6 +2,9 @@
 # enforced separately through .editorconfig and repository instructions.
 * text=auto eol=crlf
 
+# Shell scripts must stay LF so they remain executable on Linux.
+*.sh text eol=lf
+
 # Common binary artifacts.
 *.dll -text
 *.exe -text

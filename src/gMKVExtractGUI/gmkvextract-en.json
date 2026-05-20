@@ -704,6 +704,12 @@
       "IsTranslated": true,
       "Notes": "Help text describing filename placeholders"
     },
+    "UI.OptionsForm.Patterns.Group": {
+      "Source": "Filename Patterns",
+      "Translation": "Filename Patterns",
+      "IsTranslated": true,
+      "Notes": "GroupBox label for filename pattern editors"
+    },
     "UI.TranslationEditor.Title": {
       "Source": "Translation Editor",
       "Translation": "Translation Editor",
@@ -799,6 +805,12 @@
       "Translation": "Create",
       "IsTranslated": true,
       "Notes": "Button to confirm creation of a new locale"
+    },
+    "UI.TranslationEditor.Actions.Load": {
+      "Source": "Load",
+      "Translation": "Load",
+      "IsTranslated": true,
+      "Notes": "Button to load the selected locale"
     },
     "UI.TranslationEditor.Actions.NewLocale": {
       "Source": "New Locale...",
@@ -1088,6 +1100,18 @@
       "Translation": "{0} by {1} ({2})...",
       "IsTranslated": true,
       "Notes": "Context menu item for selecting track groups by a filter"
+    },
+    "UI.MainForm2.ContextMenu.CheckTrackGroupByFilter": {
+      "Source": "Check {0} by {1} ({2})...",
+      "Translation": "Check {0} by {1} ({2})...",
+      "IsTranslated": true,
+      "Notes": "Context menu item to check track groups by a filter"
+    },
+    "UI.MainForm2.ContextMenu.UncheckTrackGroupByFilter": {
+      "Source": "Uncheck {0} by {1} ({2})...",
+      "Translation": "Uncheck {0} by {1} ({2})...",
+      "IsTranslated": true,
+      "Notes": "Context menu item to uncheck track groups by a filter"
     },
     "UI.MainForm2.ContextMenu.FilterValueCount": {
       "Source": "{0}: [{1}] ({2}/{3})",

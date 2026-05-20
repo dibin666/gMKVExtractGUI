@@ -56,6 +56,12 @@ For more information, discussions, and support, please visit the project's origi
 3.  **Documentation:** For detailed usage instructions, refer to the [User Manual](docs/README.md).
 4.  **Optional Setup:** Open **Options** to choose the UI theme, switch the application language, or launch the in-app **Translations...** editor. The current build ships with `en`, `es`, `de`, `pt`, `pt-br`, `fr`, `el`, `zh-cn`, `zh-tw`, `ja`, `ru`, `it`, `nl`, `pl`, `tr`, `ro`, `hi`, and `ko` locale files.
 
+### C++/Qt Rewrite
+
+The native C++/Qt rewrite is being developed side-by-side with the existing C#
+application. Build, install, and packaging notes live in
+[docs/CPP_BUILD_AND_PACKAGE.md](docs/CPP_BUILD_AND_PACKAGE.md).
+
 ---
 
 ## Contributing
