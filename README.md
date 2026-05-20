@@ -58,6 +58,15 @@ Runtime prerequisites:
 - Qt 6.2 or newer with Core, Widgets, and Test modules
 - `mkvmerge`, `mkvinfo`, and `mkvextract`
 
+Release packages:
+
+- `.deb` for Debian/Ubuntu compatible systems on `amd64` and `arm64`
+- `.rpm` for RPM compatible systems on `x86_64` and `aarch64`
+- AppImage for `x86_64` and `aarch64`
+
+Linux packages do not bundle MKVToolNix. Install the distro's `mkvtoolnix`
+package or otherwise provide `mkvmerge`, `mkvinfo`, and `mkvextract`.
+
 ### Windows Usage
 
 Install MKVToolNix normally. On Windows, the app detects an MKVToolNix
@@ -73,6 +82,14 @@ ctest --test-dir build\cpp -C Debug --output-on-failure
 cmake --install build\cpp --config Debug --prefix build\cpp-install
 windeployqt build\cpp-install\bin\gMKVExtractGUIQt.exe
 ```
+
+Release packages:
+
+- Windows x64 installer `.exe`
+- Windows x64 portable `.zip`
+
+Windows packages do not bundle MKVToolNix. Install MKVToolNix separately so the
+app can detect its directory.
 
 ### Language Files
 
@@ -144,6 +161,15 @@ cmake --install build/cpp --prefix build/cpp-install
 - Qt 6.2 或更新版本，包含 Core、Widgets、Test 模块
 - `mkvmerge`、`mkvinfo`、`mkvextract`
 
+发布包：
+
+- 适用于 Debian/Ubuntu 兼容系统的 `amd64` 和 `arm64` `.deb`
+- 适用于 RPM 兼容系统的 `x86_64` 和 `aarch64` `.rpm`
+- 适用于 `x86_64` 和 `aarch64` 的 AppImage
+
+Linux 包不会内置 MKVToolNix。请安装发行版的 `mkvtoolnix` 包，或者用其他方式提供
+`mkvmerge`、`mkvinfo` 和 `mkvextract`。
+
 ### Windows 使用方式
 
 Windows 下请正常安装 MKVToolNix。程序会检测 MKVToolNix 安装目录，并验证其中
@@ -158,6 +184,13 @@ ctest --test-dir build\cpp -C Debug --output-on-failure
 cmake --install build\cpp --config Debug --prefix build\cpp-install
 windeployqt build\cpp-install\bin\gMKVExtractGUIQt.exe
 ```
+
+发布包：
+
+- Windows x64 安装器 `.exe`
+- Windows x64 便携版 `.zip`
+
+Windows 包不会内置 MKVToolNix。请单独安装 MKVToolNix，程序会检测其安装目录。
 
 ### 语言文件
 

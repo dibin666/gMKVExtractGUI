@@ -1,0 +1,320 @@
+name: Release Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version override, for example 2.13.0. Defaults to the CMake project version."
+        required: false
+        type: string
+  push:
+    tags:
+      - "v*"
+
+# Tag builds need contents:write so the publish job can create/upload GitHub
+# Release assets with the repository GITHUB_TOKEN.
+permissions:
+  contents: write
+
+jobs:
+  linux_amd64:
+    name: Linux amd64
+    runs-on: ubuntu-24.04
+    env:
+      DEB_ARCH: amd64
+      RPM_ARCH: x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve package version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          elif [[ -n "${{ inputs.version }}" ]]; then
+            version="${{ inputs.version }}"
+          else
+            version="$(
+              awk '
+                /^project\(/ { in_project = 1 }
+                in_project && $1 == "VERSION" { print $2; exit }
+                in_project && /\)/ { in_project = 0 }
+              ' CMakeLists.txt
+            )"
+          fi
+          version="$(printf '%s' "$version" | tr -d '\r\n')"
+          if [[ -z "$version" ]]; then
+            echo "Could not resolve package version" >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "Resolved package version: $version"
+
+      - name: Install build and package dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            appstream \
+            build-essential \
+            ca-certificates \
+            cmake \
+            desktop-file-utils \
+            dpkg-dev \
+            file \
+            libgl1-mesa-dev \
+            libxkbcommon-x11-0 \
+            libxcb-cursor0 \
+            ninja-build \
+            qt6-base-dev \
+            qt6-tools-dev \
+            qt6-tools-dev-tools \
+            rpm
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -S . -B build/cpp -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DGMKV_PACKAGE_VERSION="$VERSION"
+
+      - name: Build
+        shell: bash
+        run: cmake --build build/cpp
+
+      - name: Test
+        shell: bash
+        run: ctest --test-dir build/cpp --output-on-failure
+
+      - name: Package DEB and RPM
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/cpack-deb dist/cpack-rpm
+          cpack --config build/cpp/CPackConfig.cmake -G DEB -B dist/cpack-deb
+          cpack --config build/cpp/CPackConfig.cmake -G RPM -B dist/cpack-rpm
+          cp dist/cpack-deb/*.deb "dist/gMKVExtractGUI-$VERSION-linux-$DEB_ARCH.deb"
+          cp dist/cpack-rpm/*.rpm "dist/gMKVExtractGUI-$VERSION-linux-$RPM_ARCH.rpm"
+
+      - name: Upload Linux packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-linux-amd64
+          if-no-files-found: error
+          path: |
+            dist/*.deb
+            dist/*.rpm
+
+  linux_arm64:
+    name: Linux arm64
+    runs-on: ubuntu-24.04-arm
+    env:
+      DEB_ARCH: arm64
+      RPM_ARCH: aarch64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve package version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          elif [[ -n "${{ inputs.version }}" ]]; then
+            version="${{ inputs.version }}"
+          else
+            version="$(
+              awk '
+                /^project\(/ { in_project = 1 }
+                in_project && $1 == "VERSION" { print $2; exit }
+                in_project && /\)/ { in_project = 0 }
+              ' CMakeLists.txt
+            )"
+          fi
+          version="$(printf '%s' "$version" | tr -d '\r\n')"
+          if [[ -z "$version" ]]; then
+            echo "Could not resolve package version" >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "Resolved package version: $version"
+
+      - name: Install build and package dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            appstream \
+            build-essential \
+            ca-certificates \
+            cmake \
+            desktop-file-utils \
+            dpkg-dev \
+            file \
+            libgl1-mesa-dev \
+            libxkbcommon-x11-0 \
+            libxcb-cursor0 \
+            ninja-build \
+            qt6-base-dev \
+            qt6-tools-dev \
+            qt6-tools-dev-tools \
+            rpm
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -S . -B build/cpp -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DGMKV_PACKAGE_VERSION="$VERSION"
+
+      - name: Build
+        shell: bash
+        run: cmake --build build/cpp
+
+      - name: Test
+        shell: bash
+        run: ctest --test-dir build/cpp --output-on-failure
+
+      - name: Package DEB and RPM
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/cpack-deb dist/cpack-rpm
+          cpack --config build/cpp/CPackConfig.cmake -G DEB -B dist/cpack-deb
+          cpack --config build/cpp/CPackConfig.cmake -G RPM -B dist/cpack-rpm
+          cp dist/cpack-deb/*.deb "dist/gMKVExtractGUI-$VERSION-linux-$DEB_ARCH.deb"
+          cp dist/cpack-rpm/*.rpm "dist/gMKVExtractGUI-$VERSION-linux-$RPM_ARCH.rpm"
+
+      - name: Upload Linux packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-linux-arm64
+          if-no-files-found: error
+          path: |
+            dist/*.deb
+            dist/*.rpm
+
+  windows_x64:
+    name: Windows x64
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve package version
+        shell: pwsh
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $version = "${{ github.ref_name }}".TrimStart("v")
+          } elseif ("${{ inputs.version }}" -ne "") {
+            $version = "${{ inputs.version }}"
+          } else {
+            $cmake = Get-Content CMakeLists.txt -Raw
+            $version = [regex]::Match($cmake, 'project\s*\([\s\S]*?VERSION\s+([0-9]+(?:\.[0-9]+)*)').Groups[1].Value
+          }
+          $version = $version.Trim()
+          if ($version -eq "") {
+            throw "Could not resolve package version"
+          }
+          "VERSION=$version" >> $env:GITHUB_ENV
+          "Resolved package version: $version"
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.7.3"
+          arch: win64_msvc2019_64
+          cache: true
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -S . -B build/cpp -G "Visual Studio 17 2022" -A x64 `
+            -DGMKV_PACKAGE_VERSION="$env:VERSION"
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build/cpp --config Release
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir build/cpp -C Release --output-on-failure
+
+      - name: Install
+        shell: pwsh
+        run: cmake --install build/cpp --config Release --prefix build/cpp-install
+
+      - name: Deploy Qt runtime
+        shell: pwsh
+        run: windeployqt build/cpp-install/bin/gMKVExtractGUIQt.exe
+
+      - name: Install NSIS
+        shell: pwsh
+        run: choco install nsis -y --no-progress
+
+      - name: Package Windows artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          $portable = "dist/gMKVExtractGUI-$env:VERSION-windows-x64-portable.zip"
+          Compress-Archive -Path build/cpp-install/* -DestinationPath $portable -Force
+
+          $sourceDir = (Resolve-Path build/cpp-install).Path
+          $outputFile = (Join-Path (Resolve-Path dist).Path "gMKVExtractGUI-$env:VERSION-windows-x64-installer.exe")
+          $iconFile = (Resolve-Path build/cpp-install/bin/gMkvExtractGuiIcon.ico).Path
+          & "${env:ProgramFiles(x86)}\NSIS\makensis.exe" `
+            "/DAPP_VERSION=$env:VERSION" `
+            "/DSOURCE_DIR=$sourceDir" `
+            "/DOUTPUT_FILE=$outputFile" `
+            "/DICON_FILE=$iconFile" `
+            "packaging/windows/gMKVExtractGUI.nsi"
+
+      - name: Upload Windows packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-windows-x64
+          if-no-files-found: error
+          path: |
+            dist/*.exe
+            dist/*.zip
+
+  publish:
+    name: Publish GitHub Release
+    needs:
+      - linux_amd64
+      - linux_arm64
+      - windows_x64
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          repo="${GITHUB_REPOSITORY:?}"
+          if gh release view "$TAG_NAME" --repo "$repo" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" dist/* --clobber --repo "$repo"
+          else
+            gh release create "$TAG_NAME" dist/* \
+              --repo "$repo" \
+              --title "$TAG_NAME" \
+              --notes "Automated release packages for $TAG_NAME."
+          fi

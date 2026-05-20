@@ -35,6 +35,10 @@ file(GLOB GMKV_LOCALE_FILES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/locales/gmkvextract-*.json"
 )
 set(GMKV_ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resources/gMkvExtractGuiIcon.ico")
+set(GMKV_LINUX_ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/${GMKV_APP_ID}.svg")
+set(GMKV_LINUX_DESKTOP_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/${GMKV_APP_ID}.desktop")
+set(GMKV_LINUX_METAINFO_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/linux/${GMKV_APP_ID}.metainfo.xml.in")
+set(GMKV_LINUX_METAINFO_FILE "${CMAKE_CURRENT_BINARY_DIR}/${GMKV_APP_ID}.metainfo.xml")
 
 if(WIN32)
     file(TO_NATIVE_PATH "${GMKV_ICON_FILE}" GMKV_WINDOWS_ICON_FILE_NATIVE)
@@ -66,6 +70,23 @@ install(FILES ${GMKV_LOCALE_FILES}
 install(FILES "${GMKV_ICON_FILE}"
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+if(UNIX AND NOT APPLE)
+    string(TIMESTAMP GMKV_RELEASE_DATE "%Y-%m-%d" UTC)
+    configure_file(
+        "${GMKV_LINUX_METAINFO_TEMPLATE}"
+        "${GMKV_LINUX_METAINFO_FILE}"
+        @ONLY
+    )
+    install(FILES "${GMKV_LINUX_DESKTOP_FILE}"
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+    )
+    install(FILES "${GMKV_LINUX_ICON_FILE}"
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
+    )
+    install(FILES "${GMKV_LINUX_METAINFO_FILE}"
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo
+    )
+endif()
 
 if(GMKV_BUILD_CPP_TESTS)
     add_test(NAME gMKVExtractGUIQtSmoke COMMAND gMKVExtractGUIQt --smoke-test)

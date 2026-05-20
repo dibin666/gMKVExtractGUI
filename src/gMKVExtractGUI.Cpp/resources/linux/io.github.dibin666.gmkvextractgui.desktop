@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=gMKVExtractGUI
+Comment=Extract tracks, chapters, tags, attachments, and cues from Matroska files
+Exec=gMKVExtractGUIQt
+Icon=io.github.dibin666.gmkvextractgui
+Terminal=false
+Categories=AudioVideo;AudioVideoEditing;Qt;
+Keywords=MKV;Matroska;mkvextract;mkvmerge;mkvinfo;MKVToolNix;
+StartupWMClass=gMKVExtractGUI

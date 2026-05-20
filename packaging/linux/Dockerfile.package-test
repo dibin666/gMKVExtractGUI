@@ -1,0 +1,22 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        appstream \
+        build-essential \
+        ca-certificates \
+        cmake \
+        desktop-file-utils \
+        dpkg-dev \
+        file \
+        libgl1-mesa-dev \
+        libxkbcommon-x11-0 \
+        libxcb-cursor0 \
+        ninja-build \
+        qt6-base-dev \
+        qt6-tools-dev \
+        qt6-tools-dev-tools \
+        rpm \
+    && rm -rf /var/lib/apt/lists/*

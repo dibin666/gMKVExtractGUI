@@ -32,8 +32,37 @@ cmake --install build/cpp --prefix build/cpp-install
 The install step places `gMKVExtractGUIQt`, `gmkvextract-*.json`, and
 `gMkvExtractGuiIcon.ico` under the install `bin` directory. Locale source files
 live in `src/gMKVExtractGUI.Cpp/resources/locales`. Distributions should package
-the required Qt runtime libraries through their normal dependency system. An
-AppImage or distro package can be layered on top of the install tree.
+the required Qt runtime libraries through their normal dependency system. A
+distro package can be layered on top of the install tree.
+
+## Linux Release Packages
+
+The release workflow builds Linux packages for:
+
+- `amd64` / `x86_64`
+- `arm64` / `aarch64`
+
+Local package validation must run in Docker so package-test dependencies stay
+out of the host system:
+
+```bash
+docker build -f packaging/linux/Dockerfile.package-test -t gmkvextractgui-package-test .
+docker run --rm \
+  -v "$PWD:/work" \
+  -w /work \
+  gmkvextractgui-package-test \
+  bash packaging/linux/docker-package-test.sh
+docker image rm gmkvextractgui-package-test:latest
+```
+
+The Docker validation script builds in `/tmp`, runs CTest, validates Linux
+desktop/AppStream metadata, and creates `.deb` and `.rpm` packages with CPack.
+The workflow runs the same CMake/CPack flow on clean GitHub-hosted runners.
+
+The CPack generators create `.deb` and `.rpm` packages from the CMake install
+rules. The `.deb` and `.rpm` metadata declare `mkvtoolnix` as a runtime
+dependency where the format supports dependency metadata. The application still
+resolves `mkvmerge`, `mkvinfo`, and `mkvextract` directly at runtime.
 
 ## Windows Debug Build
 
@@ -60,3 +89,33 @@ windeployqt build\cpp-install\bin\gMKVExtractGUIQt.exe
 Keep the installed `gmkvextract-*.json` locale files beside the executable so
 runtime localization and the Translation Editor can load and save the existing
 JSON format without conversion.
+
+## Windows Release Packages
+
+The release workflow builds Windows x64 with Visual Studio 2022 and Qt for
+MSVC, installs the app to `build/cpp-install`, and then runs:
+
+```powershell
+windeployqt build\cpp-install\bin\gMKVExtractGUIQt.exe
+```
+
+After Qt deployment, the workflow creates:
+
+- `gMKVExtractGUI-<version>-windows-x64-portable.zip`
+- `gMKVExtractGUI-<version>-windows-x64-installer.exe`
+
+The installer is generated with NSIS from
+`packaging/windows/gMKVExtractGUI.nsi`. Windows packages do not bundle
+MKVToolNix; users install MKVToolNix separately and the app detects its
+installation directory.
+
+## GitHub Release Workflow
+
+`.github/workflows/release-packages.yml` runs on:
+
+- `workflow_dispatch` for test packaging runs
+- `push` tags matching `v*` for release publishing
+
+Tag builds create or update the matching GitHub Release and upload all package
+assets. Manual dispatch builds still upload artifacts to the workflow run
+without publishing a GitHub Release.

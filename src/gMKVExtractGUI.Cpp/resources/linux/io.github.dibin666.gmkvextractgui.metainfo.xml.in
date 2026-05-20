@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>@GMKV_APP_ID@</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Unlicense</project_license>
+  <name>gMKVExtractGUI</name>
+  <summary>Extract Matroska elements through a native Qt interface</summary>
+  <description>
+    <p>
+      gMKVExtractGUI is a native C++/Qt graphical interface for extracting
+      tracks, chapters, tags, attachments, cues, and timecodes from Matroska
+      files with MKVToolNix command-line tools.
+    </p>
+  </description>
+  <developer id="io.github.dibin666">
+    <name>dibin666</name>
+  </developer>
+  <launchable type="desktop-id">@GMKV_APP_ID@.desktop</launchable>
+  <url type="homepage">https://github.com/dibin666/gMKVExtractGUI</url>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="@GMKV_PACKAGE_VERSION@" date="@GMKV_RELEASE_DATE@" />
+  </releases>
+</component>
