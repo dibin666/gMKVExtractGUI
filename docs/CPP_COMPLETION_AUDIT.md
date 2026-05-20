@@ -27,10 +27,10 @@ settings, jobs, extraction naming, tests, and packaging documentation.
 | Linux build/launch/package | Configure/build/ctest/install passed on Linux Mint 22.3; `scripts/cpp_manual_smoke.sh` passed | Validated |
 | Windows build/launch/package | CMake commands, `windeployqt` docs, Windows registry discovery, Windows icon resource | Implemented paths documented; smoke/build was skipped by user request and is not host-validated |
 | Manual parity testing documented | `docs/CPP_MANUAL_PARITY_CHECKLIST.md` | Documented |
-| Commit gate | Trellis 3.4 commit plan prepared | Waiting for user confirmation |
+| Commit gate | Work commit `4df4ef7 feat(cpp): add native Qt rewrite` | Completed |
 
 ## Current Completion Decision
 
 Do not mark the task complete yet. The implementation is in a validated Linux
 state, but the acceptance goal still has weak or missing evidence for Windows
-host validation, full manual GUI parity rows, and the Trellis commit gate.
+host validation and full manual GUI parity rows.
