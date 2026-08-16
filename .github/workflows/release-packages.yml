@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Package version override, for example 2.13.0. Defaults to the CMake project version."
+        description: "Package version override, for example 2.15.0. Defaults to the CMake project version."
         required: false
         type: string
   push:

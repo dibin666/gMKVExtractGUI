@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="${VERSION:-2.13.0}"
+VERSION="${VERSION:-2.15.0}"
 BUILD_DIR="${BUILD_DIR:-/tmp/gmkvextractgui-build}"
 DIST_DIR="${DIST_DIR:-/tmp/gmkvextractgui-dist}"
 

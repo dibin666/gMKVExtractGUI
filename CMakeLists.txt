@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(gMKVExtractGUI_Cpp
-    VERSION 2.13.0
+    VERSION 2.15.0
     DESCRIPTION "Native C++/Qt rewrite of gMKVExtractGUI"
     LANGUAGES CXX
 )

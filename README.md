@@ -8,13 +8,13 @@ This fork ports the original gMKVExtractGUI from C#/.NET to native C++/Qt and pu
 # Debian/Ubuntu
 sudo apt update
 sudo apt install mkvtoolnix libqt6widgets6t64
-sudo apt install ./gMKVExtractGUI-0.1.0-linux-amd64.deb
+sudo apt install ./gMKVExtractGUI-2.15.0-linux-amd64.deb
 ```
 
 ```bash
 # Fedora/RHEL
 sudo dnf install mkvtoolnix qt6-qtbase-gui
-sudo dnf install ./gMKVExtractGUI-0.1.0-linux-x86_64.rpm
+sudo dnf install ./gMKVExtractGUI-2.15.0-linux-x86_64.rpm
 ```
 
 On older Debian/Ubuntu releases, use `libqt6widgets6` if `libqt6widgets6t64` is unavailable.
@@ -81,7 +81,7 @@ For more information, discussions, and support, please visit the project's origi
 1.  **Download the Latest Release:** Head over to the [Releases](https://github.com/Gpower2/gMKVExtractGUI/releases) section and download the latest executable.
 2.  **Prerequisites:** Ensure you have [MKVToolNix](https://mkvtoolnix.download/) installed on your system.
 3.  **Documentation:** For detailed usage instructions, refer to the [User Manual](docs/README.md).
-4.  **Optional Setup:** Open **Options** to choose the UI theme, switch the application language, or launch the in-app **Translations...** editor. The current build ships with `en`, `es`, `de`, `pt`, `pt-br`, `fr`, `el`, `zh-cn`, `zh-tw`, `ja`, `ru`, `it`, `nl`, `pl`, `tr`, `ro`, `hi`, and `ko` locale files.
+4.  **Optional Setup:** Open **Options** to choose the UI theme, switch the application language, or launch the in-app **Translations...** editor. The current build ships with `en`, `es`, `de`, `et`, `pt`, `pt-br`, `fr`, `el`, `hu`, `zh-cn`, `zh-tw`, `ja`, `ru`, `it`, `nl`, `pl`, `tr`, `ro`, `hi`, and `ko` locale files.
 
 ---
 
